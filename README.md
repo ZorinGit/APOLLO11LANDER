@@ -12,3 +12,6 @@ lander acceleration due to gravity 1.6 m/s^2
 lunar gravitational force on lander = 24164.8 N
 lander descent thruster force = 45000 N
 total lander acceleration when the trusters fire = -1.38 m/s^2
+lander maneuvering thruster force = 450 N and 4 modules and 4 nozzles = 7200 N
+(not exactly accurate but lateral speed was too slow otherwise)
+lander maneuvering thruster acceleration = 0.12 m/s^2
