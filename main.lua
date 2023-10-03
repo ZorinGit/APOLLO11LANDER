@@ -21,11 +21,19 @@ function love.load()
     LANDER.y_total_thruster_and_lunar_acceleration = tonumber(string.format("%.2f", (LANDER.y_total_thruster_and_lunar_force_N / LANDER.mass_kg)))
 
     -- x axis lander variables
-    LANDER.x = 640
+    LANDER.x = 200
     LANDER.x_velocity = 0
     LANDER.x_thruster = 0
     LANDER.x_thruster_force_N = 7200
     LANDER.x_thruster_acceleration = tonumber(string.format("%.2f", (LANDER.x_thruster_force_N / LANDER.mass_kg)))
+
+    -- lander collision pixels
+    LANDER_COLLISION_PIXELS = {
+        {x = LANDER.x , y = LANDER.y}, -- upper left
+        {x = LANDER.x + 24 , y = LANDER.y}, -- upper right
+        {x = LANDER.x, y = LANDER.y + 24}, -- lower left
+        {x = LANDER.x + 24, y = LANDER.y + 24} -- lover right
+    }
 
     -- for timer
     START_TIME = love.timer.getTime()
@@ -70,6 +78,23 @@ function love.update(dt)
     LANDER.x = LANDER.x + LANDER.x_velocity * dt
 
 
+    -- update lander collision pixels
+    LANDER_COLLISION_PIXELS = {
+        {x = math.floor(LANDER.x) , y = math.floor(LANDER.y)}, -- upper left
+        {x = math.floor(LANDER.x + 24) , y = math.floor(LANDER.y)}, -- upper right
+        {x = math.floor(LANDER.x), y = math.floor(LANDER.y + 24)}, -- lower left
+        {x = math.floor(LANDER.x + 24), y = math.floor(LANDER.y + 24)} -- lover right
+    }
+
+    for i, point in ipairs(LANDER_COLLISION_PIXELS) do
+        print("Point "..i..": x = "..point.x..", y = "..point.y)
+    end
+
+    -- for i = 1, 4 do
+    --     for k , v in pairs(LANDER_COLLISION_PIXELS[i]) do
+    --         print(k, v)
+    --     end
+    -- end
 
     -- check lander parameters by pressing p
     function love.keypressed(key)
@@ -89,6 +114,7 @@ function love.draw()
     -- displayed variables on the right corner
     local y_location = 1205
     local x_location = 10
+    love.graphics.setColor(255, 255, 255)
     love.graphics.print("Ypos: " .. math.floor(LANDER.y), y_location, x_location)
     love.graphics.print("Xpos: " .. math.floor(LANDER.x), y_location, x_location + 15)
     love.graphics.print("Yvel: " .. math.floor(LANDER.y_velocity), y_location, x_location + 30)
@@ -96,5 +122,19 @@ function love.draw()
     love.graphics.print("Time: " .. math.floor(ELAPSED_TIME), y_location, x_location + 60)
 
     -- draw lander
-    love.graphics.circle("fill", LANDER.x, LANDER.y, 15)
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.rectangle("fill", LANDER.x, LANDER.y, 25, 25)
+
+    -- draw lunar surface
+    love.graphics.setColor(0.25, 0.25, 0.25)
+    love.graphics.setLineWidth(3)
+    love.graphics.line(0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750)
+
+    -- draw landing zone
+    love.graphics.setColor(0.90, 0.90, 0.90)
+    love.graphics.setLineWidth(2)
+    love.graphics.line(1100, 748, 1135, 748)
+
+
+
 end
