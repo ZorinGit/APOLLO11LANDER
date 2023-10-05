@@ -59,9 +59,12 @@ function love.load()
         end
     end
 
+    COLLISION_FLAG = false
+
     -- for timer
     START_TIME = love.timer.getTime()
-
+    -- counter to reduce the frequency of collision checks
+    COLLISION_FREQUENCY_COUNTER = 0
 end
 
 
@@ -110,7 +113,6 @@ function love.update(dt)
         {x = math.floor(LANDER.x + 24), y = math.floor(LANDER.y + 24)} -- lover right
     }
 
-
     -- tests for updated collision pixels
     -- for i, point in ipairs(LANDER_COLLISION_PIXELS) do
     --     print("Point "..i..": x = "..point.x..", y = "..point.y)
@@ -120,6 +122,21 @@ function love.update(dt)
     --         print(k, v)
     --     end
     -- end
+
+    -- collision check and counter used to reduce the check frequency to 50 times a second for a smoother game
+    COLLISION_FREQUENCY_COUNTER = COLLISION_FREQUENCY_COUNTER + dt
+    if COLLISION_FREQUENCY_COUNTER > 0.02 then
+        for i = 1, #LANDER_COLLISION_PIXELS do
+            for j = 1, #LINE_COLLISION_PIXELS do
+                if LANDER_COLLISION_PIXELS[i]["x"] == LINE_COLLISION_PIXELS[j]["x"] and LANDER_COLLISION_PIXELS[i]["y"] == LINE_COLLISION_PIXELS[j]["y"] then
+                    COLLISION_FLAG = true
+                    print("***COLLISION***")
+                end
+            end
+        end
+        COLLISION_FREQUENCY_COUNTER = 0
+    end
+
 
     -- check lander parameters by pressing p
     function love.keypressed(key)
@@ -136,19 +153,22 @@ end
 
 
 function love.draw()
-    -- displayed variables on the right corner
-    local y_location = 1205
-    local x_location = 10
-    love.graphics.setColor(255, 255, 255)
-    love.graphics.print("Ypos: " .. math.floor(LANDER.y), y_location, x_location)
-    love.graphics.print("Xpos: " .. math.floor(LANDER.x), y_location, x_location + 15)
-    love.graphics.print("Yvel: " .. math.floor(LANDER.y_velocity), y_location, x_location + 30)
-    love.graphics.print("Xvel: " .. math.floor(LANDER.x_velocity), y_location, x_location + 45)
-    love.graphics.print("Time: " .. math.floor(ELAPSED_TIME), y_location, x_location + 60)
 
-    -- draw lander
-    love.graphics.setColor(255, 255, 255)
-    love.graphics.rectangle("fill", LANDER.x, LANDER.y, 25, 25)
+    if COLLISION_FLAG == false then
+        -- displayed variables on the right corner
+        local y_location = 1205
+        local x_location = 10
+        love.graphics.setColor(255, 255, 255)
+        love.graphics.print("Ypos: " .. math.floor(LANDER.y), y_location, x_location)
+        love.graphics.print("Xpos: " .. math.floor(LANDER.x), y_location, x_location + 15)
+        love.graphics.print("Yvel: " .. math.floor(LANDER.y_velocity), y_location, x_location + 30)
+        love.graphics.print("Xvel: " .. math.floor(LANDER.x_velocity), y_location, x_location + 45)
+        love.graphics.print("Time: " .. math.floor(ELAPSED_TIME), y_location, x_location + 60)
+
+        -- draw lander
+        love.graphics.setColor(255, 255, 255)
+        love.graphics.rectangle("fill", LANDER.x, LANDER.y, 25, 25)
+    end
 
     -- draw lunar surface
     love.graphics.setColor(0.25, 0.25, 0.25)
