@@ -35,6 +35,30 @@ function love.load()
         {x = LANDER.x + 24, y = LANDER.y + 24} -- lover right
     }
 
+    -- define the surface line points
+    LINE_POINTS = {0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750}
+
+    -- populate table for all collision pixels in the surface line based on the LINE_POINTS
+    -- NOTE WILL NOT HANDLE VERTICAL LINES - divide by 0
+    LINE_COLLISION_PIXELS = {}
+
+    for i = 1, #LINE_POINTS - 2 , 2 do
+        -- declare x and y values for point1 and point2
+        local x1 = LINE_POINTS[i]
+        local y1 = LINE_POINTS[i + 1]
+        local x2 = LINE_POINTS[i + 2]
+        local y2 = LINE_POINTS[i + 3]
+        -- using y = mx + b line formula
+        -- calculate m 
+        local m = (y2 - y1) / (x2 - x1)
+        -- calculate b
+        local b = y1 - (m * x1)
+        -- filling in the table using the line formula
+        for j = x1, x2 do
+            table.insert(LINE_COLLISION_PIXELS, {x = j, y = math.floor((m * j) + b)})
+        end
+    end
+
     -- for timer
     START_TIME = love.timer.getTime()
 
@@ -86,10 +110,11 @@ function love.update(dt)
         {x = math.floor(LANDER.x + 24), y = math.floor(LANDER.y + 24)} -- lover right
     }
 
-    for i, point in ipairs(LANDER_COLLISION_PIXELS) do
-        print("Point "..i..": x = "..point.x..", y = "..point.y)
-    end
 
+    -- tests for updated collision pixels
+    -- for i, point in ipairs(LANDER_COLLISION_PIXELS) do
+    --     print("Point "..i..": x = "..point.x..", y = "..point.y)
+    -- end
     -- for i = 1, 4 do
     --     for k , v in pairs(LANDER_COLLISION_PIXELS[i]) do
     --         print(k, v)
@@ -128,7 +153,7 @@ function love.draw()
     -- draw lunar surface
     love.graphics.setColor(0.25, 0.25, 0.25)
     love.graphics.setLineWidth(3)
-    love.graphics.line(0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750)
+    love.graphics.line(LINE_POINTS)
 
     -- draw landing zone
     love.graphics.setColor(0.90, 0.90, 0.90)
