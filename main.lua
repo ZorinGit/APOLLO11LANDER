@@ -11,7 +11,9 @@ function love.load()
     LANDER.mass_kg = 15103
 
     -- y axis lander variables 
-    LANDER.y = 40
+    -- LANDER.y = 40
+    -- testing
+    LANDER.y = 700
     LANDER.y_velocity = 0
     LANDER.y_only_lunar_force_N = LANDER.mass_kg * LUNAR.gravity_force_N_per_kg
     LANDER.y_only_lunar_force_acceleration = LANDER.y_only_lunar_force_N / LANDER.mass_kg
@@ -21,7 +23,9 @@ function love.load()
     LANDER.y_total_thruster_and_lunar_acceleration = tonumber(string.format("%.2f", (LANDER.y_total_thruster_and_lunar_force_N / LANDER.mass_kg)))
 
     -- x axis lander variables
-    LANDER.x = 200
+    -- LANDER.x = 200
+    -- testing
+    LANDER.x = 1102
     LANDER.x_velocity = 0
     LANDER.x_thruster = 0
     LANDER.x_thruster_force_N = 7200
@@ -36,18 +40,18 @@ function love.load()
     }
 
     -- define the surface line points
-    LINE_POINTS = {0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750}
+    SURFACE_LINE_POINTS = {0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750}
 
-    -- populate table for all collision pixels in the surface line based on the LINE_POINTS
+    -- populate table for all collision pixels in the surface line based on the SURFACE_LINE_POINTS
     -- NOTE WILL NOT HANDLE VERTICAL LINES - divide by 0
     LINE_COLLISION_PIXELS = {}
 
-    for i = 1, #LINE_POINTS - 2 , 2 do
+    for i = 1, #SURFACE_LINE_POINTS - 2 , 2 do
         -- declare x and y values for point1 and point2
-        local x1 = LINE_POINTS[i]
-        local y1 = LINE_POINTS[i + 1]
-        local x2 = LINE_POINTS[i + 2]
-        local y2 = LINE_POINTS[i + 3]
+        local x1 = SURFACE_LINE_POINTS[i]
+        local y1 = SURFACE_LINE_POINTS[i + 1]
+        local x2 = SURFACE_LINE_POINTS[i + 2]
+        local y2 = SURFACE_LINE_POINTS[i + 3]
         -- using y = mx + b line formula
         -- calculate m 
         local m = (y2 - y1) / (x2 - x1)
@@ -60,6 +64,11 @@ function love.load()
     end
 
     COLLISION_FLAG = false
+
+    -- landing line points
+    LANDING_SURFACE_LINE_POINTS = {1100, 748, 1135, 748}
+
+    LANDING_FLAG = false
 
     -- for timer
     START_TIME = love.timer.getTime()
@@ -83,8 +92,10 @@ function love.update(dt)
     end
 
     -- y axis lander movement
-    LANDER.y = LANDER.y + LANDER.y_velocity * dt
-
+    if LANDING_FLAG == false then
+        LANDER.y = LANDER.y + LANDER.y_velocity * dt
+    end
+ 
 
     -- x axis trusters and acceleration, thruster 0 = off, thruster 1 = to the right, thruster 2 = to the left
     if love.keyboard.isDown("a") then
@@ -102,15 +113,18 @@ function love.update(dt)
     end
 
     -- x axis lander movement
-    LANDER.x = LANDER.x + LANDER.x_velocity * dt
+    if LANDING_FLAG == false then
+        LANDER.x = LANDER.x + LANDER.x_velocity * dt
+    end
+
 
 
     -- update lander collision pixels
     LANDER_COLLISION_PIXELS = {
-        {x = math.floor(LANDER.x) , y = math.floor(LANDER.y)}, -- upper left
-        {x = math.floor(LANDER.x + 24) , y = math.floor(LANDER.y)}, -- upper right
-        {x = math.floor(LANDER.x), y = math.floor(LANDER.y + 24)}, -- lower left
-        {x = math.floor(LANDER.x + 24), y = math.floor(LANDER.y + 24)} -- lover right
+        {x = math.floor(LANDER.x + 1) , y = math.floor(LANDER.y + 1)}, -- upper left
+        {x = math.floor(LANDER.x + 25) , y = math.floor(LANDER.y + 1)}, -- upper right
+        {x = math.floor(LANDER.x + 1), y = math.floor(LANDER.y + 25)}, -- lower left
+        {x = math.floor(LANDER.x + 25), y = math.floor(LANDER.y + 25)} -- lover right
     }
 
     -- tests for updated collision pixels
@@ -135,6 +149,21 @@ function love.update(dt)
             end
         end
         COLLISION_FREQUENCY_COUNTER = 0
+    end
+
+
+    -- LANDING_SURFACE_LINE_POINTS = {1100, 748, 1135, 748}
+    -- landing check
+    -- check lower left lander collision pixel against the y landing level
+    if LANDER_COLLISION_PIXELS[3]["y"] == LANDING_SURFACE_LINE_POINTS[2] and
+        -- check left and right lander collision pixels against landing pad
+        LANDER_COLLISION_PIXELS[3]["x"] >= LANDING_SURFACE_LINE_POINTS[1] and
+        LANDER_COLLISION_PIXELS[4]["x"] <= LANDING_SURFACE_LINE_POINTS[3] and
+        -- check x and y velocity for acceptable levels
+        LANDER.y_velocity < 3 and LANDER.x_velocity < 1.5 then
+        -- change landing flag to true
+        LANDING_FLAG = true
+        print("***LANDED***")
     end
 
 
@@ -170,15 +199,23 @@ function love.draw()
         love.graphics.rectangle("fill", LANDER.x, LANDER.y, 25, 25)
     end
 
+    -- lander collision pixels drawn
+    love.graphics.setColor(255, 0, 0)
+    love.graphics.points(LANDER_COLLISION_PIXELS[1]["x"], LANDER_COLLISION_PIXELS[1]["y"])
+    love.graphics.points(LANDER_COLLISION_PIXELS[2]["x"], LANDER_COLLISION_PIXELS[2]["y"])
+    love.graphics.points(LANDER_COLLISION_PIXELS[3]["x"], LANDER_COLLISION_PIXELS[3]["y"])
+    love.graphics.points(LANDER_COLLISION_PIXELS[4]["x"], LANDER_COLLISION_PIXELS[4]["y"])
+
+
     -- draw lunar surface
     love.graphics.setColor(0.25, 0.25, 0.25)
     love.graphics.setLineWidth(3)
-    love.graphics.line(LINE_POINTS)
+    love.graphics.line(SURFACE_LINE_POINTS)
 
     -- draw landing zone
     love.graphics.setColor(0.90, 0.90, 0.90)
     love.graphics.setLineWidth(2)
-    love.graphics.line(1100, 748, 1135, 748)
+    love.graphics.line(LANDING_SURFACE_LINE_POINTS)
 
 
 
