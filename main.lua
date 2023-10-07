@@ -11,9 +11,9 @@ function love.load()
     LANDER.mass_kg = 15103
 
     -- y axis lander variables 
-    -- LANDER.y = 40
+    LANDER.y = 40
     -- testing
-    LANDER.y = 700
+    -- LANDER.y = 700
     LANDER.y_velocity = 0
     LANDER.y_only_lunar_force_N = LANDER.mass_kg * LUNAR.gravity_force_N_per_kg
     LANDER.y_only_lunar_force_acceleration = LANDER.y_only_lunar_force_N / LANDER.mass_kg
@@ -23,9 +23,9 @@ function love.load()
     LANDER.y_total_thruster_and_lunar_acceleration = tonumber(string.format("%.2f", (LANDER.y_total_thruster_and_lunar_force_N / LANDER.mass_kg)))
 
     -- x axis lander variables
-    -- LANDER.x = 200
+    LANDER.x = 200
     -- testing
-    LANDER.x = 1102
+    -- LANDER.x = 1102
     LANDER.x_velocity = 0
     LANDER.x_thruster = 0
     LANDER.x_thruster_force_N = 7200
@@ -69,6 +69,8 @@ function love.load()
     LANDING_SURFACE_LINE_POINTS = {1100, 748, 1135, 748}
 
     LANDING_FLAG = false
+
+    OUT_OF_BOUNDS_FLAG = false
 
     -- for timer
     START_TIME = love.timer.getTime()
@@ -152,7 +154,6 @@ function love.update(dt)
     end
 
 
-    -- LANDING_SURFACE_LINE_POINTS = {1100, 748, 1135, 748}
     -- landing check
     -- check lower left lander collision pixel against the y landing level
     if LANDER_COLLISION_PIXELS[3]["y"] == LANDING_SURFACE_LINE_POINTS[2] and
@@ -164,6 +165,17 @@ function love.update(dt)
         -- change landing flag to true
         LANDING_FLAG = true
         print("***LANDED***")
+    end
+
+    -- out of bounds check 
+    -- check lower left lander collision pixel against  top bounds of map using Y
+    if LANDER_COLLISION_PIXELS[3]["y"] < 0 or
+        -- check lower right lander collision against left bounds of map using X
+        LANDER_COLLISION_PIXELS[4]["x"] < 0 or
+        -- check lower left lander collision against right bounds of the map using X
+        LANDER_COLLISION_PIXELS[3]["x"] > 1280 then
+        OUT_OF_BOUNDS_FLAG = true
+        print("***OUT OF BOUNDS***")
     end
 
 
