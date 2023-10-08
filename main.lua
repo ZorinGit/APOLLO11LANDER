@@ -9,6 +9,9 @@ function love.load()
     -- set lander properties 
     LANDER = {}
     LANDER.mass_kg = 15103
+    LANDER.fuel_s = 120
+    --test
+    -- LANDER.fuel_s =20
 
     -- y axis lander variables 
     LANDER.y = 40
@@ -83,13 +86,15 @@ function love.update(dt)
 
     -- y axis trusters and acceleration
     LANDER.y_thruster = false
-    if love.keyboard.isDown("s") then
+    if love.keyboard.isDown("s") and LANDER.fuel_s > 1 then
         LANDER.y_thruster = true
+        -- fuel consumption
+        LANDER.fuel_s = LANDER.fuel_s - 1 * dt
     end
 
     if LANDER.y_thruster == false then
         LANDER.y_velocity = LANDER.y_velocity + LANDER.y_only_lunar_force_acceleration * dt
-    elseif LANDER.y_thruster == true then
+    elseif LANDER.y_thruster == true and LANDER.fuel_s > 0 then
         LANDER.y_velocity = LANDER.y_velocity + LANDER.y_total_thruster_and_lunar_acceleration * dt
     end
 
@@ -97,20 +102,24 @@ function love.update(dt)
     if LANDING_FLAG == false then
         LANDER.y = LANDER.y + LANDER.y_velocity * dt
     end
- 
+
 
     -- x axis trusters and acceleration, thruster 0 = off, thruster 1 = to the right, thruster 2 = to the left
-    if love.keyboard.isDown("a") then
+    if love.keyboard.isDown("a") and LANDER.fuel_s > 0 then
         LANDER.x_thruster = 1
-    elseif love.keyboard.isDown("d") then
+        -- fuel consumption
+        LANDER.fuel_s = LANDER.fuel_s - 1 * dt * (LANDER.x_thruster_force_N/math.abs(LANDER.y_only_thruster_force_N))
+    elseif love.keyboard.isDown("d") and LANDER.fuel_s > 0 then
         LANDER.x_thruster = 2
+        -- fuel consumption
+        LANDER.fuel_s = LANDER.fuel_s - 1 * dt * (LANDER.x_thruster_force_N/math.abs(LANDER.y_only_thruster_force_N))
     else
         LANDER.x_thruster = 0
     end
 
-    if LANDER.x_thruster == 1 then
+    if LANDER.x_thruster == 1 and LANDER.fuel_s > 1 then
         LANDER.x_velocity = LANDER.x_velocity + LANDER.x_thruster_acceleration * dt
-    elseif LANDER.x_thruster == 2 then
+    elseif LANDER.x_thruster == 2 and LANDER.fuel_s > 1 then
         LANDER.x_velocity = LANDER.x_velocity - LANDER.x_thruster_acceleration * dt
     end
 
@@ -118,7 +127,6 @@ function love.update(dt)
     if LANDING_FLAG == false then
         LANDER.x = LANDER.x + LANDER.x_velocity * dt
     end
-
 
 
     -- update lander collision pixels
@@ -142,7 +150,7 @@ function love.update(dt)
     -- collision check and counter used to reduce the check frequency to 50 times a second for a smoother game
     COLLISION_FREQUENCY_COUNTER = COLLISION_FREQUENCY_COUNTER + dt
     if COLLISION_FREQUENCY_COUNTER > 0.02 then
-        for i = 1, #LANDER_COLLISION_PIXELS do
+        for i = 3, #LANDER_COLLISION_PIXELS do
             for j = 1, #LINE_COLLISION_PIXELS do
                 if LANDER_COLLISION_PIXELS[i]["x"] == LINE_COLLISION_PIXELS[j]["x"] and LANDER_COLLISION_PIXELS[i]["y"] == LINE_COLLISION_PIXELS[j]["y"] then
                     COLLISION_FLAG = true
@@ -205,6 +213,7 @@ function love.draw()
         love.graphics.print("Yvel: " .. math.floor(LANDER.y_velocity), y_location, x_location + 30)
         love.graphics.print("Xvel: " .. math.floor(LANDER.x_velocity), y_location, x_location + 45)
         love.graphics.print("Time: " .. math.floor(ELAPSED_TIME), y_location, x_location + 60)
+        love.graphics.print("Fuel: " .. math.floor(LANDER.fuel_s), y_location, x_location + 75)
 
         -- draw lander
         love.graphics.setColor(255, 255, 255)
