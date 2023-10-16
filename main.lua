@@ -137,7 +137,7 @@ function love.update(dt)
         {x = math.floor(LANDER.x + 25), y = math.floor(LANDER.y + 25)} -- lover right
     }
 
-    -- tests for updated collision pixels
+    -- -- tests for updated collision pixels
     -- for i, point in ipairs(LANDER_COLLISION_PIXELS) do
     --     print("Point "..i..": x = "..point.x..", y = "..point.y)
     -- end
@@ -187,14 +187,14 @@ function love.update(dt)
     end
 
 
-    -- check lander parameters by pressing p
-    function love.keypressed(key)
-        if key == "p" then
-            for k, v in pairs(LANDER) do
-                print(k, v)
-            end
-        end
-    end
+    -- -- check lander parameters by pressing p
+    -- function love.keypressed(key)
+    --     if key == "p" then
+    --         for k, v in pairs(LANDER) do
+    --             print(k, v)
+    --         end
+    --     end
+    -- end
 
     -- for timer
     ELAPSED_TIME = love.timer.getTime() - START_TIME
@@ -207,7 +207,7 @@ function love.draw()
         -- displayed variables on the right corner
         local y_location = 1205
         local x_location = 10
-        love.graphics.setColor(255, 255, 255)
+        love.graphics.setColor(1, 1, 1)
         love.graphics.print("Ypos: " .. math.floor(LANDER.y), y_location, x_location)
         love.graphics.print("Xpos: " .. math.floor(LANDER.x), y_location, x_location + 15)
         love.graphics.print("Yvel: " .. math.floor(LANDER.y_velocity), y_location, x_location + 30)
@@ -216,16 +216,16 @@ function love.draw()
         love.graphics.print("Fuel: " .. math.floor(LANDER.fuel_s), y_location, x_location + 75)
 
         -- draw lander
-        love.graphics.setColor(255, 255, 255)
+        love.graphics.setColor(1, 1, 1)
         love.graphics.rectangle("fill", LANDER.x, LANDER.y, 25, 25)
     end
 
-    -- lander collision pixels drawn
-    love.graphics.setColor(255, 0, 0)
-    love.graphics.points(LANDER_COLLISION_PIXELS[1]["x"], LANDER_COLLISION_PIXELS[1]["y"])
-    love.graphics.points(LANDER_COLLISION_PIXELS[2]["x"], LANDER_COLLISION_PIXELS[2]["y"])
-    love.graphics.points(LANDER_COLLISION_PIXELS[3]["x"], LANDER_COLLISION_PIXELS[3]["y"])
-    love.graphics.points(LANDER_COLLISION_PIXELS[4]["x"], LANDER_COLLISION_PIXELS[4]["y"])
+    -- -- draw lander collision pixels
+    -- love.graphics.setColor(255, 0, 0)
+    -- love.graphics.points(LANDER_COLLISION_PIXELS[1]["x"], LANDER_COLLISION_PIXELS[1]["y"])
+    -- love.graphics.points(LANDER_COLLISION_PIXELS[2]["x"], LANDER_COLLISION_PIXELS[2]["y"])
+    -- love.graphics.points(LANDER_COLLISION_PIXELS[3]["x"], LANDER_COLLISION_PIXELS[3]["y"])
+    -- love.graphics.points(LANDER_COLLISION_PIXELS[4]["x"], LANDER_COLLISION_PIXELS[4]["y"])
 
 
     -- draw lunar surface
@@ -238,6 +238,8 @@ function love.draw()
     love.graphics.setLineWidth(2)
     love.graphics.line(LANDING_SURFACE_LINE_POINTS)
 
-
+    -- tutorial graphics
+    love.graphics.setColor(1, 1, 1)
+    love.graphics.print("        A    S    D \n\nthruster commands", LANDER.x - 48, LANDER.y + 30)
 
 end
