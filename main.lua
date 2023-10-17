@@ -38,42 +38,14 @@ function love.load()
     LANDER.y_total_thruster_and_lunar_force_N = LANDER.y_only_lunar_force_N + LANDER.y_only_thruster_force_N
     LANDER.y_total_thruster_and_lunar_acceleration = tonumber(string.format("%.2f", (LANDER.y_total_thruster_and_lunar_force_N / LANDER.mass_kg)))
 
-    -- lander collision pixels
-    LANDER_COLLISION_PIXELS = {
-        {x = LANDER.x , y = LANDER.y}, -- upper left
-        {x = LANDER.x + 24 , y = LANDER.y}, -- upper right
-        {x = LANDER.x, y = LANDER.y + 24}, -- lower left
-        {x = LANDER.x + 24, y = LANDER.y + 24} -- lover right
-    }
 
 
-    -- define the surface line points
-    SURFACE_LINE_POINTS = {0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750}
-
-    -- populate table for all collision pixels in the surface line based on the SURFACE_LINE_POINTS
-    -- NOTE WILL NOT HANDLE VERTICAL LINES - divide by 0
+    -- initialize lander collision pixels surface line points and line collision pixels and landing zone surface and score
+    LANDER_COLLISION_PIXELS = {}
+    SURFACE_LINE_POINTS = {}
     LINE_COLLISION_PIXELS = {}
-
-    for i = 1, #SURFACE_LINE_POINTS - 2 , 2 do
-        -- declare x and y values for point1 and point2
-        local x1 = SURFACE_LINE_POINTS[i]
-        local y1 = SURFACE_LINE_POINTS[i + 1]
-        local x2 = SURFACE_LINE_POINTS[i + 2]
-        local y2 = SURFACE_LINE_POINTS[i + 3]
-        -- using y = mx + b line formula
-        -- calculate m 
-        local m = (y2 - y1) / (x2 - x1)
-        -- calculate b
-        local b = y1 - (m * x1)
-        -- filling in the table using the line formula
-        for j = x1, x2 do
-            table.insert(LINE_COLLISION_PIXELS, {x = j, y = math.floor((m * j) + b)})
-        end
-    end
-
-
-    -- define landing zone surface line points
-    LANDING_SURFACE_LINE_POINTS = {1100, 748, 1135, 748}
+    LANDING_SURFACE_LINE_POINTS = {}
+    SCORE = 0
 
 
     -- counter to reduce the frequency of collision checks
@@ -87,6 +59,38 @@ function love.load()
     -- game manager setting up game states
     GAME_MANAGER = {"1-tutorial", "2-game_play", "3-paused", "4-landed", "5-crashed", "6-out_of_bounds", "7-score_screen"}
     CURRENT_GAME_STATE = GAME_MANAGER[1]
+
+
+    -- levels - NAME - LANDER.x - LANDER.x_velocity - LANDER.y - LANDER.y_velocity - LANDER.fuel_s - SURFACE_LINE_POINTS - LANDING_SURFACE_LINE_POINTS
+
+    LEVEL_1 = {
+        name = "LEVEL_1",
+        lander_x = 1105,
+        lander_x_velocity = 0,
+        lander_y = 650,
+        lander_y_velocity = 0,
+        lander_fuel_s = 120,
+        surface_line_points = {0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750},
+        landing_surface_line_points = {1100, 748, 1135, 748}
+    }
+
+    LEVEL_2 = {
+        name = "LEVEL_2",
+        lander_x = 60,
+        lander_x_velocity = 0,
+        lander_y = 20,
+        lander_y_velocity = 0,
+        lander_fuel_s = 120,
+        surface_line_points = {0, 750, 500, 750, 550, 580, 920, 580, 970, 750, 1280, 750},
+        landing_surface_line_points = {1100, 748, 1135, 748}
+    }
+
+    -- set up level stuff
+    LEVELS = {LEVEL_1, LEVEL_2}
+    TOTAL_NUMBER_OF_LEVELS = #LEVELS
+    LEVEL_NUMBER = 1
+    CURRENT_LEVEL = LEVELS[LEVEL_NUMBER]
+    LEVEL_LOADED_FLAG = false
 
 
     -- drawings
@@ -136,12 +140,19 @@ function love.load()
         end
     }
 
+    PAUSED_TEXT = {
+        draw = function ()
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.print("PRESS p TO UNPAUSE", SCREEN_X / 2, SCREEN_Y / 2)
+        end
+    }
+
     LANDED_TEXT = {
         draw = function ()
             love.graphics.setColor(1, 1, 1)
             love.graphics.print("THE EAGLE HAS LANDED!", SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PRESS r TO RESTART THIS LEVEL", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
-            love.graphics.print("PRESS c CONTINUE TO NEXT LEVEL", SCREEN_X / 2, (SCREEN_Y / 2) + 40)
+            love.graphics.print("PRESS c TO CONTINUE", SCREEN_X / 2, (SCREEN_Y / 2) + 40)
         end
     }
 
@@ -161,10 +172,67 @@ function love.load()
         end
     }
 
+    SCORE_SCREEN_TEXT = {
+        draw = function (SCORE)
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.print("CONGRATULATIONS! YOUR FINAL SCORE IS: " .. math.floor(SCORE), SCREEN_X / 2, SCREEN_Y / 2)
+            love.graphics.print("PLEASE PRESS x TO EXIT GAME!", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+        end
+    }
+
 end
 
 
+------------------------------------------------------------------------------------------------------------------------------------
+
+
 function love.update(dt)
+
+    -- loading current level
+    if LEVEL_LOADED_FLAG == false then
+
+        LANDER.x = CURRENT_LEVEL.lander_x
+        LANDER.x_velocity = CURRENT_LEVEL.lander_x_velocity
+        LANDER.y = CURRENT_LEVEL.lander_y
+        LANDER.y_velocity = CURRENT_LEVEL.lander_y_velocity
+        LANDER.fuel_s = CURRENT_LEVEL.lander_fuel_s
+        SURFACE_LINE_POINTS = CURRENT_LEVEL.surface_line_points
+        LANDING_SURFACE_LINE_POINTS = CURRENT_LEVEL.landing_surface_line_points
+
+        -- load initial lander collision pixels
+        LANDER_COLLISION_PIXELS = {
+            {x = LANDER.x , y = LANDER.y}, -- upper left
+            {x = LANDER.x + 24 , y = LANDER.y}, -- upper right
+            {x = LANDER.x, y = LANDER.y + 24}, -- lower left
+            {x = LANDER.x + 24, y = LANDER.y + 24} -- lover right
+        }
+
+        -- load line collision pixels for this level
+
+        LINE_COLLISION_PIXELS = {}
+
+        -- populating table for all collision pixels in the surface line based on the SURFACE_LINE_POINTS
+        -- NOTE WILL NOT HANDLE VERTICAL LINES - divide by 0
+        for i = 1, #SURFACE_LINE_POINTS - 2 , 2 do
+            -- declare x and y values for point1 and point2
+            local x1 = SURFACE_LINE_POINTS[i]
+            local y1 = SURFACE_LINE_POINTS[i + 1]
+            local x2 = SURFACE_LINE_POINTS[i + 2]
+            local y2 = SURFACE_LINE_POINTS[i + 3]
+            -- using y = mx + b line formula
+            -- calculate m 
+            local m = (y2 - y1) / (x2 - x1)
+            -- calculate b
+            local b = y1 - (m * x1)
+            -- filling in the table using the line formula
+            for j = x1, x2 do
+                table.insert(LINE_COLLISION_PIXELS, {x = j, y = math.floor((m * j) + b)})
+            end
+        end
+
+        -- finish loading level
+        LEVEL_LOADED_FLAG = true
+    end
 
 
     if CURRENT_GAME_STATE == "1-tutorial" then
@@ -301,25 +369,28 @@ function love.update(dt)
     if CURRENT_GAME_STATE == "4-landed" then
 
         function love.keypressed(key)
-            -- exit 4_landed into 2-game_play by pressing "r" to restart level
+            -- exit 4-landed into 2-game_play by pressing "r" to restart level
             if key == 'r' then
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
-
-                -- resetting level, this should be done properly when levels are implemented
-
-                LANDER.fuel_s = 120
-                LANDER.y = 40
-                LANDER.y_velocity = 0
-                LANDER.x = 200
-                LANDER.x_velocity = 0
-
+                LEVEL_LOADED_FLAG = false
             end
 
-            -- -- exit 4_paused into 2-game_play by pressing "c" continue to next level
-            -- -- TO DO change level
-            -- if key == 'c' then
-            --     CURRENT_GAME_STATE = GAME_MANAGER[2]
-            -- end
+            if key == 'c' then
+                -- iterate to next level
+                LEVEL_NUMBER = LEVEL_NUMBER + 1
+                -- switch to next level or the score_screen if no more levels
+                if LEVEL_NUMBER <= TOTAL_NUMBER_OF_LEVELS then
+                    CURRENT_LEVEL = LEVELS[LEVEL_NUMBER]
+                    LEVEL_LOADED_FLAG = false
+                    -- update score with leftover fuel
+                    SCORE = SCORE + LANDER.fuel_s
+                    -- exit 4-landed into 2-game_play by pressing "c" to continue to next level
+                    CURRENT_GAME_STATE = GAME_MANAGER[2]
+                else
+                    -- exit 4-landed into 7-score_screen by pressing "c" to continue to score_screen
+                    CURRENT_GAME_STATE = GAME_MANAGER[7]
+                end
+            end
         end
     end
 
@@ -328,16 +399,9 @@ function love.update(dt)
         function love.keypressed(key)
             -- exit 5_crashed into 2-game_play by pressing "r" to restart level
             if key == 'r' then
+                LEVEL_LOADED_FLAG = false
+
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
-
-                -- resetting level, this should be done properly when levels are implemented
-
-                LANDER.fuel_s = 120
-                LANDER.y = 40
-                LANDER.y_velocity = 0
-                LANDER.x = 200
-                LANDER.x_velocity = 0
-
             end
         end
     end
@@ -347,15 +411,9 @@ function love.update(dt)
         function love.keypressed(key)
             -- exit 6-out_of_bounds into 2-game_play by pressing "r" to restart level
             if key == 'r' then
+                LEVEL_LOADED_FLAG = false
+
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
-
-                -- resetting level, this should be done properly when levels are implemented
-
-                LANDER.fuel_s = 120
-                LANDER.y = 40
-                LANDER.y_velocity = 0
-                LANDER.x = 200
-                LANDER.x_velocity = 0
             end
         end
     end
@@ -363,6 +421,12 @@ function love.update(dt)
 
     if CURRENT_GAME_STATE == "7-score_screen" then
         -- TO DO implement after levels
+        function love.keypressed(key)
+            -- exit 7-out_of_bounds quitting the game window
+            if key == 'x' then
+                love.event.quit()
+            end
+        end
     end
 
 
@@ -372,14 +436,17 @@ function love.update(dt)
 end
 
 
+------------------------------------------------------------------------------------------------------------------------------------
+
+
 function love.draw()
 
     if CURRENT_GAME_STATE == "1-tutorial" then
-        TUTORIAL_TEXT.draw()
         HUD_TEXT.draw()
         LANDER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
+        TUTORIAL_TEXT.draw()
     end
 
     if CURRENT_GAME_STATE == "2-game_play" then
@@ -394,6 +461,7 @@ function love.draw()
         LANDER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
+        PAUSED_TEXT.draw()
     end
 
     if CURRENT_GAME_STATE == "4-landed" then
@@ -420,7 +488,7 @@ function love.draw()
     end
 
     if CURRENT_GAME_STATE == "7-score_screen" then
-        -- TO DO implement after levels
+        SCORE_SCREEN_TEXT.draw(SCORE)
     end
 
 end
