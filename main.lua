@@ -15,21 +15,17 @@ function love.load()
     -- set lander properties 
     LANDER = {}
     LANDER.mass_kg = 15103
-    LANDER.fuel_s = 120
+    LANDER.fuel_s = 0
 
     -- x axis lander variables
-    -- LANDER.x = 200
-    -- test
-    LANDER.x = 1105
+    LANDER.x = 0
     LANDER.x_velocity = 0
     LANDER.x_thruster = 0
     LANDER.x_thruster_force_N = 7200
     LANDER.x_thruster_acceleration = tonumber(string.format("%.2f", (LANDER.x_thruster_force_N / LANDER.mass_kg)))
 
     -- y axis lander variables 
-    -- LANDER.y = 40
-    -- test
-    LANDER.y = 650
+    LANDER.y = 0
     LANDER.y_velocity = 0
     LANDER.y_only_lunar_force_N = LANDER.mass_kg * LUNAR.gravity_force_N_per_kg
     LANDER.y_only_lunar_force_acceleration = LANDER.y_only_lunar_force_N / LANDER.mass_kg
@@ -37,7 +33,6 @@ function love.load()
     LANDER.y_only_thruster_force_N = - 45000
     LANDER.y_total_thruster_and_lunar_force_N = LANDER.y_only_lunar_force_N + LANDER.y_only_thruster_force_N
     LANDER.y_total_thruster_and_lunar_acceleration = tonumber(string.format("%.2f", (LANDER.y_total_thruster_and_lunar_force_N / LANDER.mass_kg)))
-
 
 
     -- initialize lander collision pixels surface line points and line collision pixels and landing zone surface and score
@@ -49,7 +44,7 @@ function love.load()
 
 
     -- counter to reduce the frequency of collision checks
-    COLLISION_FREQUENCY_COUNTER = 0
+    -- COLLISION_FREQUENCY_COUNTER = 0
 
 
     -- start timer NOT USED
@@ -65,28 +60,61 @@ function love.load()
 
     LEVEL_1 = {
         name = "LEVEL_1",
-        lander_x = 1105,
+        lander_x = 150,
         lander_x_velocity = 0,
-        lander_y = 650,
+        lander_y = 50,
         lander_y_velocity = 0,
-        lander_fuel_s = 120,
-        surface_line_points = {0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750},
-        landing_surface_line_points = {1100, 748, 1135, 748}
+        lander_fuel_s = 100,
+        surface_line_points = {0, 750, 1280, 750},
+        landing_surface_line_points = {300, 748, 350, 748}
     }
 
     LEVEL_2 = {
         name = "LEVEL_2",
-        lander_x = 60,
+        lander_x = 150,
         lander_x_velocity = 0,
-        lander_y = 20,
+        lander_y = 50,
         lander_y_velocity = 0,
-        lander_fuel_s = 120,
-        surface_line_points = {0, 750, 500, 750, 550, 580, 920, 580, 970, 750, 1280, 750},
+        lander_fuel_s = 100,
+        surface_line_points = {0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750},
         landing_surface_line_points = {1100, 748, 1135, 748}
     }
 
+    LEVEL_3 = {
+        name = "LEVEL_3",
+        lander_x = 150,
+        lander_x_velocity = 0,
+        lander_y = 350,
+        lander_y_velocity = 0,
+        lander_fuel_s = 100,
+        surface_line_points = {0, 750, 500, 750, 550, 300, 920, 300, 970, 750, 1280, 750},
+        landing_surface_line_points = {1100, 748, 1135, 748}
+    }
+
+    LEVEL_4 = {
+        name = "LEVEL_4",
+        lander_x = 150,
+        lander_x_velocity = -10,
+        lander_y = 20,
+        lander_y_velocity = 15,
+        lander_fuel_s = 110,
+        surface_line_points = {0, 750, 500, 750, 550, 450, 1000, 450, 1090, 750, 1140, 750, 1280, 450},
+        landing_surface_line_points = {1100, 748, 1135, 748}
+    }
+
+    LEVEL_5 = {
+        name = "LEVEL_5",
+        lander_x = 1200,
+        lander_x_velocity = - 28,
+        lander_y = 600,
+        lander_y_velocity = 10,
+        lander_fuel_s = 85,
+        surface_line_points = {0, 750, 100, 750, 150, 450, 200, 450, 250, 100, 400, 100, 450, 750, 1280, 750},
+        landing_surface_line_points = {160, 448, 190, 448}
+    }
+
     -- set up level stuff
-    LEVELS = {LEVEL_1, LEVEL_2}
+    LEVELS = {LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5}
     TOTAL_NUMBER_OF_LEVELS = #LEVELS
     LEVEL_NUMBER = 1
     CURRENT_LEVEL = LEVELS[LEVEL_NUMBER]
@@ -105,6 +133,7 @@ function love.load()
             love.graphics.print("VELOCITIES ->", X_location - 180, Y_location)
             love.graphics.print("MUST BE UNDER 5 m/s FOR SAFE LANDING", X_location - 270, Y_location + 15)
             love.graphics.print("THRUSTERS WILL NOT FIRE IF FUEL ->\n                   RUNS OUT", X_location - 260, Y_location + 34)
+            love.graphics.print("IF LANDER EXITS THE SCREEN IT WILL BECOME LOST IN SPACE ->", X_location - 320, Y_location + 150)
             love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 25, LANDING_SURFACE_LINE_POINTS[2] - 20)
         end
     }
@@ -320,8 +349,8 @@ function love.update(dt)
 
         -- crash check
         -- collision with surface check and counter used to reduce the check frequency to 50 times a second for a smoother game
-        COLLISION_FREQUENCY_COUNTER = COLLISION_FREQUENCY_COUNTER + dt
-        if COLLISION_FREQUENCY_COUNTER > 0.02 then
+        -- COLLISION_FREQUENCY_COUNTER = COLLISION_FREQUENCY_COUNTER + dt
+        -- if COLLISION_FREQUENCY_COUNTER > 0.02 then
             for i = 3, #LANDER_COLLISION_PIXELS do
                 for j = 1, #LINE_COLLISION_PIXELS do
                     if LANDER_COLLISION_PIXELS[i]["x"] == LINE_COLLISION_PIXELS[j]["x"] and LANDER_COLLISION_PIXELS[i]["y"] == LINE_COLLISION_PIXELS[j]["y"] then
@@ -331,8 +360,8 @@ function love.update(dt)
                     end
                 end
             end
-            COLLISION_FREQUENCY_COUNTER = 0
-        end
+            -- COLLISION_FREQUENCY_COUNTER = 0
+        -- end
 
 
         -- out of bounds check 
