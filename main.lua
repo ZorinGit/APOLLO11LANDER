@@ -52,7 +52,7 @@ function love.load()
     COLLISION_FREQUENCY_COUNTER = 0
 
 
-    -- for timer
+    -- start timer NOT USED
     START_TIME = love.timer.getTime()
 
 
@@ -97,23 +97,28 @@ function love.load()
     TUTORIAL_TEXT = {
         draw = function ()
             love.graphics.setColor(1, 1, 1)
-            love.graphics.print("        A    S    D \n\nthruster commands", LANDER.x - 48, LANDER.y + 30)
+            love.graphics.print("        A    S    D \n\nTHRUSTER COMMANDS", LANDER.x - 48, LANDER.y + 30)
             love.graphics.print("PRESS SPACE TO START", SCREEN_X / 2, SCREEN_Y / 2)
+            love.graphics.print("PRESS p TO pause", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+            local X_location = SCREEN_X - 90
+            local Y_location = SCREEN_Y - 790
+            love.graphics.print("VELOCITIES ->", X_location - 180, Y_location)
+            love.graphics.print("MUST BE UNDER 5 m/s FOR SAFE LANDING", X_location - 270, Y_location + 15)
+            love.graphics.print("THRUSTERS WILL NOT FIRE IF FUEL ->\n                   RUNS OUT", X_location - 260, Y_location + 34)
+            love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 25, LANDING_SURFACE_LINE_POINTS[2] - 20)
         end
     }
 
     HUD_TEXT = {
         draw = function ()
             -- displayed variables on the right corner
-            local X_location = SCREEN_X - 75
+            local X_location = SCREEN_X - 90
             local Y_location = SCREEN_Y - 790
             love.graphics.setColor(1, 1, 1)
-            love.graphics.print("Ypos: " .. math.floor(LANDER.y), X_location, Y_location)
-            love.graphics.print("Xpos: " .. math.floor(LANDER.x), X_location, Y_location + 15)
-            love.graphics.print("Yvel: " .. math.floor(LANDER.y_velocity), X_location, Y_location + 30)
-            love.graphics.print("Xvel: " .. math.floor(LANDER.x_velocity), X_location, Y_location + 45)
-            love.graphics.print("Time: " .. math.floor(ELAPSED_TIME), X_location, Y_location + 60)
-            love.graphics.print("Fuel: " .. math.floor(LANDER.fuel_s), X_location, Y_location + 75)
+            love.graphics.print("Yvel: " .. math.floor(LANDER.y_velocity) .. " m/s", X_location, Y_location)
+            love.graphics.print("Xvel: " .. math.floor(LANDER.x_velocity) .. " m/s", X_location, Y_location + 17)
+            love.graphics.print("Fuel: " .. math.floor(LANDER.fuel_s) .. " s", X_location , Y_location + 34)
+            love.graphics.print(CURRENT_LEVEL["name"], X_location, Y_location + 51)
         end
     }
 
@@ -243,12 +248,10 @@ function love.update(dt)
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
             end
         end
-
     end
 
 
     if CURRENT_GAME_STATE == "2-game_play" then
-
 
         -- x axis trusters and acceleration, thruster 0 = off, thruster 1 = to the right, thruster 2 = to the left
         if love.keyboard.isDown("a") and LANDER.fuel_s > 0 then
@@ -307,7 +310,7 @@ function love.update(dt)
             LANDER_COLLISION_PIXELS[3]["x"] >= LANDING_SURFACE_LINE_POINTS[1] and
             LANDER_COLLISION_PIXELS[4]["x"] <= LANDING_SURFACE_LINE_POINTS[3] and
             -- check x and y velocity as absolute values for acceptable landing levels 
-            math.abs(LANDER.y_velocity) < 4 and math.abs(LANDER.x_velocity) < 1.5 then
+            math.abs(LANDER.y_velocity) < 5 and math.abs(LANDER.x_velocity) < 5 then
             -- change landing flag to true
             print("***LANDED***")
             -- exit 2-game_play into 4-landed by proper landing
@@ -352,11 +355,11 @@ function love.update(dt)
                 CURRENT_GAME_STATE = GAME_MANAGER[3]
             end
         end
-
     end
 
 
     if CURRENT_GAME_STATE == "3-paused" then
+
         -- exit 3_paused into 2-game_play by pressing "p"
         function love.keypressed(key)
             if key == 'p' then
@@ -387,6 +390,8 @@ function love.update(dt)
                     -- exit 4-landed into 2-game_play by pressing "c" to continue to next level
                     CURRENT_GAME_STATE = GAME_MANAGER[2]
                 else
+                    -- update score with leftover fuel
+                    SCORE = SCORE + LANDER.fuel_s
                     -- exit 4-landed into 7-score_screen by pressing "c" to continue to score_screen
                     CURRENT_GAME_STATE = GAME_MANAGER[7]
                 end
@@ -396,6 +401,7 @@ function love.update(dt)
 
 
     if CURRENT_GAME_STATE == "5-crashed" then
+
         function love.keypressed(key)
             -- exit 5_crashed into 2-game_play by pressing "r" to restart level
             if key == 'r' then
@@ -408,6 +414,7 @@ function love.update(dt)
 
 
     if CURRENT_GAME_STATE == "6-out_of_bounds" then
+
         function love.keypressed(key)
             -- exit 6-out_of_bounds into 2-game_play by pressing "r" to restart level
             if key == 'r' then
@@ -420,9 +427,9 @@ function love.update(dt)
 
 
     if CURRENT_GAME_STATE == "7-score_screen" then
-        -- TO DO implement after levels
+
         function love.keypressed(key)
-            -- exit 7-out_of_bounds quitting the game window
+            -- exit 7-out_of_bounds quitting the game window with "x"
             if key == 'x' then
                 love.event.quit()
             end
@@ -430,7 +437,7 @@ function love.update(dt)
     end
 
 
-    -- for timer
+    -- run timer - NOT USED
     ELAPSED_TIME = love.timer.getTime() - START_TIME
 
 end
