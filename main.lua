@@ -17,8 +17,15 @@ function love.load()
     LANDER.mass_kg = 15103
     LANDER.fuel_s = 0
 
+    -- set lander sprites different opacities used here for ghost images used for smoother movement
+    LANDER.spriteA1 = love.graphics.newImage('sprites/Lander A1.png')
+    LANDER.spriteA05 = love.graphics.newImage('sprites/Lander A05.png')
+    LANDER.spriteA025 = love.graphics.newImage('sprites/Lander A025.png')
+
     -- x axis lander variables
     LANDER.x = 0
+    LANDER.x_old1 = 0
+    LANDER.x_old2 = 0
     LANDER.x_velocity = 0
     LANDER.x_thruster = 0
     LANDER.x_thruster_force_N = 7200
@@ -26,6 +33,8 @@ function love.load()
 
     -- y axis lander variables 
     LANDER.y = 0
+    LANDER.y_old1 = 0
+    LANDER.y_old2 = 0
     LANDER.y_velocity = 0
     LANDER.y_only_lunar_force_N = LANDER.mass_kg * LUNAR.gravity_force_N_per_kg
     LANDER.y_only_lunar_force_acceleration = LANDER.y_only_lunar_force_N / LANDER.mass_kg
@@ -45,6 +54,15 @@ function love.load()
 
     -- counter to reduce the frequency of collision checks
     -- COLLISION_FREQUENCY_COUNTER = 0
+
+    -- counter to reduce the frequency for updating ghost images and magnitude of velocity to change the update rate
+    GHOST_IMAGE_UPDATE_COUNTERx1 = 0
+    GHOST_IMAGE_UPDATE_COUNTERx2 = 0
+    GHOST_IMAGE_UPDATE_COUNTERy1 = 0
+    GHOST_IMAGE_UPDATE_COUNTERy2 = 0
+    GHOST_BASE_UPDATE_SPEED = 0.08
+    GHOST_FINAL_UPDATE_SPEED = 0.08
+    VELOCITY_MAGNITUDE = 0
 
 
     -- start timer NOT USED
@@ -153,8 +171,9 @@ function love.load()
 
     LANDER_GRAPHIC = {
         draw = function ()
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.rectangle("fill", LANDER.x, LANDER.y, 25, 25)
+            love.graphics.draw(LANDER.spriteA1, LANDER.x_old2, LANDER.y_old2)
+            love.graphics.draw(LANDER.spriteA05, LANDER.x_old1, LANDER.y_old1)
+            love.graphics.draw(LANDER.spriteA025, LANDER.x, LANDER.y)
         end
     }
 
@@ -226,8 +245,12 @@ function love.update(dt)
     if LEVEL_LOADED_FLAG == false then
 
         LANDER.x = CURRENT_LEVEL.lander_x
+        LANDER.x_old1 = CURRENT_LEVEL.lander_x
+        LANDER.x_old2 = CURRENT_LEVEL.lander_x
         LANDER.x_velocity = CURRENT_LEVEL.lander_x_velocity
         LANDER.y = CURRENT_LEVEL.lander_y
+        LANDER.y_old1 = CURRENT_LEVEL.lander_y
+        LANDER.y_old2 = CURRENT_LEVEL.lander_y
         LANDER.y_velocity = CURRENT_LEVEL.lander_y_velocity
         LANDER.fuel_s = CURRENT_LEVEL.lander_fuel_s
         SURFACE_LINE_POINTS = CURRENT_LEVEL.surface_line_points
@@ -301,6 +324,22 @@ function love.update(dt)
             LANDER.x_velocity = LANDER.x_velocity - LANDER.x_thruster_acceleration * dt
         end
 
+
+        -- ghost images coordinates to make movement smoother
+        if GHOST_IMAGE_UPDATE_COUNTERx2 >= GHOST_FINAL_UPDATE_SPEED then
+            LANDER.x_old2 = LANDER.x_old1
+            GHOST_IMAGE_UPDATE_COUNTERx2 = 0
+        end
+
+        if GHOST_IMAGE_UPDATE_COUNTERx1 >= GHOST_FINAL_UPDATE_SPEED then
+            LANDER.x_old1 = LANDER.x
+            GHOST_IMAGE_UPDATE_COUNTERx1 = 0
+        end
+
+        GHOST_IMAGE_UPDATE_COUNTERx2 = GHOST_IMAGE_UPDATE_COUNTERx2 + dt
+        GHOST_IMAGE_UPDATE_COUNTERx1 = GHOST_IMAGE_UPDATE_COUNTERx1 + dt
+
+
         -- x axis lander movement
         LANDER.x = LANDER.x + LANDER.x_velocity * dt
 
@@ -319,8 +358,29 @@ function love.update(dt)
             LANDER.y_velocity = LANDER.y_velocity + LANDER.y_total_thruster_and_lunar_acceleration * dt
         end
 
+        -- ghost images coordinates to make movement smoother
+        if GHOST_IMAGE_UPDATE_COUNTERy2 >= GHOST_FINAL_UPDATE_SPEED then
+            LANDER.y_old2 = LANDER.y_old1
+            GHOST_IMAGE_UPDATE_COUNTERy2 = 0
+        end
+
+        if GHOST_IMAGE_UPDATE_COUNTERy1 >= GHOST_FINAL_UPDATE_SPEED then
+            LANDER.y_old1 = LANDER.y
+            GHOST_IMAGE_UPDATE_COUNTERy1 = 0
+        end
+
+        GHOST_IMAGE_UPDATE_COUNTERy2 = GHOST_IMAGE_UPDATE_COUNTERy2 + dt
+        GHOST_IMAGE_UPDATE_COUNTERy1 = GHOST_IMAGE_UPDATE_COUNTERy1 + dt
+
         -- y axis lander movement
         LANDER.y = LANDER.y + LANDER.y_velocity * dt
+
+
+        -- calculate magnitude of velocity and update speed for frequency of updating ghost images
+        VELOCITY_MAGNITUDE = math.sqrt(math.pow(LANDER.x_velocity, 2) + math.pow(LANDER.y_velocity, 2))
+        if VELOCITY_MAGNITUDE > 0 then
+            GHOST_FINAL_UPDATE_SPEED = GHOST_BASE_UPDATE_SPEED / VELOCITY_MAGNITUDE
+        end
 
 
         -- update lander collision pixels as the lander moves
