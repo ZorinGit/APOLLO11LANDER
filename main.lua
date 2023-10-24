@@ -32,7 +32,8 @@ function love.load()
     LANDER.x_old1 = 0
     LANDER.x_old2 = 0
     LANDER.x_velocity = 0
-    LANDER.x_thruster = 0
+    LANDER.x_thruster_left = false
+    LANDER.x_thruster_right = false
     LANDER.x_thruster_force_N = 7200
     LANDER.x_thruster_acceleration = tonumber(string.format("%.2f", (LANDER.x_thruster_force_N / LANDER.mass_kg)))
 
@@ -180,11 +181,11 @@ function love.load()
                 love.graphics.draw(LANDER.sprite_y_thruster, LANDER.x, LANDER.y)
             end
 
-            if LANDER.x_thruster == 1 then
+            if LANDER.x_thruster_left == true then
                 love.graphics.draw(LANDER.sprite_x_thruster_left, LANDER.x, LANDER.y)
             end
 
-            if LANDER.x_thruster == 2 then
+            if LANDER.x_thruster_right == true then
                 love.graphics.draw(LANDER.sprite_x_thruster_right, LANDER.x, LANDER.y)
             end
 
@@ -322,22 +323,27 @@ function love.update(dt)
 
     if CURRENT_GAME_STATE == "2-game_play" then
 
-        -- x axis trusters and acceleration, thruster 0 = off, thruster 1 = to the right, thruster 2 = to the left
+
+        -- x axis trusters and acceleration left or right
+        LANDER.x_thruster_left = false
+        LANDER.x_thruster_right = false
         if love.keyboard.isDown("a") and LANDER.fuel_s > 0 then
-            LANDER.x_thruster = 1
+            LANDER.x_thruster_left = true
             -- fuel consumption
             LANDER.fuel_s = LANDER.fuel_s - 1 * dt * (LANDER.x_thruster_force_N/math.abs(LANDER.y_only_thruster_force_N))
-        elseif love.keyboard.isDown("d") and LANDER.fuel_s > 0 then
-            LANDER.x_thruster = 2
-            -- fuel consumption
-            LANDER.fuel_s = LANDER.fuel_s - 1 * dt * (LANDER.x_thruster_force_N/math.abs(LANDER.y_only_thruster_force_N))
-        else
-            LANDER.x_thruster = 0
         end
 
-        if LANDER.x_thruster == 1 and LANDER.fuel_s > 1 then
+        if love.keyboard.isDown("d") and LANDER.fuel_s > 0 then
+            LANDER.x_thruster_right = true
+            -- fuel consumption
+            LANDER.fuel_s = LANDER.fuel_s - 1 * dt * (LANDER.x_thruster_force_N/math.abs(LANDER.y_only_thruster_force_N))
+        end
+
+        if LANDER.x_thruster_left == true and LANDER.fuel_s > 1 then
             LANDER.x_velocity = LANDER.x_velocity + LANDER.x_thruster_acceleration * dt
-        elseif LANDER.x_thruster == 2 and LANDER.fuel_s > 1 then
+        end
+
+        if LANDER.x_thruster_right == true and LANDER.fuel_s > 1 then
             LANDER.x_velocity = LANDER.x_velocity - LANDER.x_thruster_acceleration * dt
         end
 
@@ -416,7 +422,7 @@ function love.update(dt)
             LANDER_COLLISION_PIXELS[3]["x"] >= LANDING_SURFACE_LINE_POINTS[1] and
             LANDER_COLLISION_PIXELS[4]["x"] <= LANDING_SURFACE_LINE_POINTS[3] and
             -- check x and y velocity as absolute values for acceptable landing levels 
-            math.abs(LANDER.y_velocity) < 5 and math.abs(LANDER.x_velocity) < 5 then
+            math.abs(LANDER.y_velocity) < 6 and math.abs(LANDER.x_velocity) < 6 then
             -- change landing flag to true
             print("***LANDED***")
             -- exit 2-game_play into 4-landed by proper landing
