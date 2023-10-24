@@ -22,6 +22,11 @@ function love.load()
     LANDER.spriteA05 = love.graphics.newImage('sprites/Lander A05.png')
     LANDER.spriteA025 = love.graphics.newImage('sprites/Lander A025.png')
 
+    -- set lander thruster sprites
+    LANDER.sprite_y_thruster = love.graphics.newImage('sprites/Y_Thruster.png')
+    LANDER.sprite_x_thruster_left = love.graphics.newImage('sprites/X_Thruster_left.png')
+    LANDER.sprite_x_thruster_right = love.graphics.newImage('sprites/X_Thruster_right.png')
+
     -- x axis lander variables
     LANDER.x = 0
     LANDER.x_old1 = 0
@@ -171,6 +176,18 @@ function love.load()
 
     LANDER_GRAPHIC = {
         draw = function ()
+            if LANDER.y_thruster == true then
+                love.graphics.draw(LANDER.sprite_y_thruster, LANDER.x, LANDER.y)
+            end
+
+            if LANDER.x_thruster == 1 then
+                love.graphics.draw(LANDER.sprite_x_thruster_left, LANDER.x, LANDER.y)
+            end
+
+            if LANDER.x_thruster == 2 then
+                love.graphics.draw(LANDER.sprite_x_thruster_right, LANDER.x, LANDER.y)
+            end
+
             love.graphics.draw(LANDER.spriteA1, LANDER.x_old2, LANDER.y_old2)
             love.graphics.draw(LANDER.spriteA05, LANDER.x_old1, LANDER.y_old1)
             love.graphics.draw(LANDER.spriteA025, LANDER.x, LANDER.y)
