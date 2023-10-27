@@ -251,6 +251,32 @@ function love.load()
         end
     }
 
+
+    -- sounds
+    CHATTER_SOUND = love.audio.newSource("sounds/chatter.mp3", "stream")
+    CHATTER_SOUND:setLooping(true)
+    MUSIC_SOUND = love.audio.newSource("sounds/music.mp3", "stream")
+    MUSIC_SOUND:setLooping(true)
+    LAND_SOUND = love.audio.newSource("sounds/land.mp3", "static")
+    LAND_SOUND:setLooping(false)
+    THRUSTER_HEAVY_SOUND = love.audio.newSource("sounds/thruster_heavy.mp3", "static")
+    THRUSTER_HEAVY_SOUND:setLooping(true)
+    THRUSTER_HEAVY_SOUND:setVolume(0.08)
+    THRUSTER_LIGHT_LEFT_SOUND = love.audio.newSource("sounds/thruster_light.mp3", "static")
+    THRUSTER_LIGHT_LEFT_SOUND:setLooping(true)
+    THRUSTER_LIGHT_LEFT_SOUND:setPosition(-4, 10, 0)
+    THRUSTER_LIGHT_RIGHT_SOUND = love.audio.newSource("sounds/thruster_light.mp3", "static")
+    THRUSTER_LIGHT_RIGHT_SOUND:setLooping(true)
+    THRUSTER_LIGHT_RIGHT_SOUND:setPosition(4, 10, 0)
+
+    -- function to stop thruster sound effects
+    SOUND_EFFECTS = {THRUSTER_HEAVY_SOUND, THRUSTER_LIGHT_LEFT_SOUND, THRUSTER_LIGHT_RIGHT_SOUND}
+    function STOP_THRUSTER_SOUND_EFFECTS()
+        for i = 1, #SOUND_EFFECTS do
+            SOUND_EFFECTS[i]:stop()
+        end
+    end
+
 end
 
 
@@ -347,7 +373,6 @@ function love.update(dt)
             LANDER.x_velocity = LANDER.x_velocity - LANDER.x_thruster_acceleration * dt
         end
 
-
         -- ghost images coordinates to make movement smoother
         if GHOST_IMAGE_UPDATE_COUNTERx2 >= GHOST_FINAL_UPDATE_SPEED then
             LANDER.x_old2 = LANDER.x_old1
@@ -362,9 +387,21 @@ function love.update(dt)
         GHOST_IMAGE_UPDATE_COUNTERx2 = GHOST_IMAGE_UPDATE_COUNTERx2 + dt
         GHOST_IMAGE_UPDATE_COUNTERx1 = GHOST_IMAGE_UPDATE_COUNTERx1 + dt
 
-
         -- x axis lander movement
         LANDER.x = LANDER.x + LANDER.x_velocity * dt
+
+        -- x axis sounds
+        if LANDER.x_thruster_left == true then
+            THRUSTER_LIGHT_LEFT_SOUND:play()
+        else
+            THRUSTER_LIGHT_LEFT_SOUND:stop()
+        end
+
+        if LANDER.x_thruster_right == true then
+            THRUSTER_LIGHT_RIGHT_SOUND:play()
+        else
+            THRUSTER_LIGHT_RIGHT_SOUND:stop()
+        end
 
 
         -- y axis trusters and acceleration
@@ -397,6 +434,13 @@ function love.update(dt)
 
         -- y axis lander movement
         LANDER.y = LANDER.y + LANDER.y_velocity * dt
+
+        -- y axis sounds
+        if LANDER.y_thruster == true then
+            THRUSTER_HEAVY_SOUND:play()
+        else
+            THRUSTER_HEAVY_SOUND:stop()
+        end
 
 
         -- calculate magnitude of velocity and update speed for frequency of updating ghost images
@@ -434,15 +478,15 @@ function love.update(dt)
         -- collision with surface check and counter used to reduce the check frequency to 50 times a second for a smoother game
         -- COLLISION_FREQUENCY_COUNTER = COLLISION_FREQUENCY_COUNTER + dt
         -- if COLLISION_FREQUENCY_COUNTER > 0.02 then
-            for i = 3, #LANDER_COLLISION_PIXELS do
-                for j = 1, #LINE_COLLISION_PIXELS do
-                    if LANDER_COLLISION_PIXELS[i]["x"] == LINE_COLLISION_PIXELS[j]["x"] and LANDER_COLLISION_PIXELS[i]["y"] == LINE_COLLISION_PIXELS[j]["y"] then
-                        print("***COLLISION***")
-                        -- exit 2-game_play into 5-crashed by collision with surface
-                        CURRENT_GAME_STATE = GAME_MANAGER[5]
-                    end
+        for i = 3, #LANDER_COLLISION_PIXELS do
+            for j = 1, #LINE_COLLISION_PIXELS do
+                if LANDER_COLLISION_PIXELS[i]["x"] == LINE_COLLISION_PIXELS[j]["x"] and LANDER_COLLISION_PIXELS[i]["y"] == LINE_COLLISION_PIXELS[j]["y"] then
+                    print("***COLLISION***")
+                    -- exit 2-game_play into 5-crashed by collision with surface
+                    CURRENT_GAME_STATE = GAME_MANAGER[5]
                 end
             end
+        end
             -- COLLISION_FREQUENCY_COUNTER = 0
         -- end
 
@@ -548,6 +592,11 @@ function love.update(dt)
         end
     end
 
+    -- sound stuff
+    -- turn off thruster sounds if not during 2-game_play
+    if CURRENT_GAME_STATE ~= "2-game_play" then
+        STOP_THRUSTER_SOUND_EFFECTS()
+    end
 
     -- run timer - NOT USED
     ELAPSED_TIME = love.timer.getTime() - START_TIME
