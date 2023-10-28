@@ -159,6 +159,7 @@ function love.load()
             love.graphics.print("THRUSTERS WILL NOT FIRE IF FUEL ->\n                   RUNS OUT", X_location - 260, Y_location + 34)
             love.graphics.print("IF LANDER EXITS THE SCREEN IT WILL BECOME LOST IN SPACE ->", X_location - 320, Y_location + 150)
             love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 25, LANDING_SURFACE_LINE_POINTS[2] - 20)
+            -- TO DO make tutorial text nicer, add score/fuel explanation
         end
     }
 
@@ -248,6 +249,7 @@ function love.load()
             love.graphics.setColor(1, 1, 1)
             love.graphics.print("CONGRATULATIONS! YOUR FINAL SCORE IS: " .. math.floor(SCORE), SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PLEASE PRESS x TO EXIT GAME!", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+            -- TO DO add music credits and dedication to apollo11
         end
     }
 
@@ -255,10 +257,19 @@ function love.load()
     -- sounds
     CHATTER_SOUND = love.audio.newSource("sounds/chatter.mp3", "stream")
     CHATTER_SOUND:setLooping(true)
+    CHATTER_SOUND:setVolume(0.03)
     MUSIC_SOUND = love.audio.newSource("sounds/music.mp3", "stream")
     MUSIC_SOUND:setLooping(true)
-    LAND_SOUND = love.audio.newSource("sounds/land.mp3", "static")
-    LAND_SOUND:setLooping(false)
+    MUSIC_SOUND:setVolume(0.3)
+    CRASH_PROBLEM_SOUND = love.audio.newSource("sounds/crash_problem.mp3", "static")
+    CRASH_PROBLEM_SOUND:setLooping(false)
+    CRASH_PROBLEM_SOUND:setVolume(0.045)
+    LAND_SUCCESS_SOUND = love.audio.newSource("sounds/land_success.mp3", "static")
+    LAND_SUCCESS_SOUND:setLooping(false)
+    LAND_SUCCESS_SOUND:setVolume(0.09)
+    VICTORY_SMALL_STEP_SOUND = love.audio.newSource("sounds/victory_small_step.mp3", "static")
+    VICTORY_SMALL_STEP_SOUND:setLooping(false)
+    VICTORY_SMALL_STEP_SOUND:setVolume(0.07)
     THRUSTER_HEAVY_SOUND = love.audio.newSource("sounds/thruster_heavy.mp3", "static")
     THRUSTER_HEAVY_SOUND:setLooping(true)
     THRUSTER_HEAVY_SOUND:setVolume(0.08)
@@ -268,12 +279,13 @@ function love.load()
     THRUSTER_LIGHT_RIGHT_SOUND = love.audio.newSource("sounds/thruster_light.mp3", "static")
     THRUSTER_LIGHT_RIGHT_SOUND:setLooping(true)
     THRUSTER_LIGHT_RIGHT_SOUND:setPosition(4, 10, 0)
+    -- TO DO possibly increase audio and add victory music
 
     -- function to stop thruster sound effects
     SOUND_EFFECTS = {THRUSTER_HEAVY_SOUND, THRUSTER_LIGHT_LEFT_SOUND, THRUSTER_LIGHT_RIGHT_SOUND}
-    function STOP_THRUSTER_SOUND_EFFECTS()
+    function INTERACT_THRUSTER_SOUND_EFFECTS(method, ...)
         for i = 1, #SOUND_EFFECTS do
-            SOUND_EFFECTS[i]:stop()
+            SOUND_EFFECTS[i][method](SOUND_EFFECTS[i], ...)
         end
     end
 
@@ -335,6 +347,7 @@ function love.update(dt)
         LEVEL_LOADED_FLAG = true
     end
 
+-----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "1-tutorial" then
 
@@ -346,8 +359,16 @@ function love.update(dt)
         end
     end
 
+-----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "2-game_play" then
+
+        -- sound stuff 
+        -- start sounds and reset volumes
+        CHATTER_SOUND:play()
+        CHATTER_SOUND:setVolume(0.03)
+        MUSIC_SOUND:play()
+        MUSIC_SOUND:setVolume(0.3)
 
 
         -- x axis trusters and acceleration left or right
@@ -469,6 +490,10 @@ function love.update(dt)
             math.abs(LANDER.y_velocity) < 6 and math.abs(LANDER.x_velocity) < 6 then
             -- change landing flag to true
             print("***LANDED***")
+            -- pause chatter lower music volume and play landing chatter
+            CHATTER_SOUND:pause()
+            MUSIC_SOUND:setVolume(0.05)
+            LAND_SUCCESS_SOUND:play()
             -- exit 2-game_play into 4-landed by proper landing
             CURRENT_GAME_STATE = GAME_MANAGER[4]
         end
@@ -482,6 +507,10 @@ function love.update(dt)
             for j = 1, #LINE_COLLISION_PIXELS do
                 if LANDER_COLLISION_PIXELS[i]["x"] == LINE_COLLISION_PIXELS[j]["x"] and LANDER_COLLISION_PIXELS[i]["y"] == LINE_COLLISION_PIXELS[j]["y"] then
                     print("***COLLISION***")
+                    -- pause chatter lower music volume and play huston we have a problem chatter
+                    CHATTER_SOUND:pause()
+                    MUSIC_SOUND:setVolume(0.05)
+                    CRASH_PROBLEM_SOUND:play()
                     -- exit 2-game_play into 5-crashed by collision with surface
                     CURRENT_GAME_STATE = GAME_MANAGER[5]
                 end
@@ -499,6 +528,10 @@ function love.update(dt)
             -- check lower left lander collision against right bounds of the map using X
             LANDER_COLLISION_PIXELS[3]["x"] > 1280 then
             print("***OUT OF BOUNDS***")
+            -- pause chatter lower music volume and huston we have a problem chatter
+            CHATTER_SOUND:pause()
+            MUSIC_SOUND:setVolume(0.05)
+            CRASH_PROBLEM_SOUND:play()
             -- exit 2-game_play into 6-out_of_bounds by exiting the screen
             CURRENT_GAME_STATE = GAME_MANAGER[6]
         end
@@ -511,10 +544,16 @@ function love.update(dt)
                 CURRENT_GAME_STATE = GAME_MANAGER[3]
             end
         end
+        -- INTERACT_BACKGROUND_SOUNDS("play")
     end
 
+-----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "3-paused" then
+
+        -- lower background sounds 
+        CHATTER_SOUND:setVolume(0.002)
+        MUSIC_SOUND:setVolume(0.05)
 
         -- exit 3_paused into 2-game_play by pressing "p"
         function love.keypressed(key)
@@ -524,21 +563,30 @@ function love.update(dt)
         end
     end
 
+-----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "4-landed" then
+
+
 
         function love.keypressed(key)
             -- exit 4-landed into 2-game_play by pressing "r" to restart level
             if key == 'r' then
+                -- stop landing chatter
+                LAND_SUCCESS_SOUND:stop()
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
                 LEVEL_LOADED_FLAG = false
             end
 
             if key == 'c' then
+                -- stop landing chatter
+                LAND_SUCCESS_SOUND:stop()
+
                 -- iterate to next level
                 LEVEL_NUMBER = LEVEL_NUMBER + 1
                 -- switch to next level or the score_screen if no more levels
-                if LEVEL_NUMBER <= TOTAL_NUMBER_OF_LEVELS then
+                -- if LEVEL_NUMBER <= TOTAL_NUMBER_OF_LEVELS then
+                if LEVEL_NUMBER <= 1 then
                     CURRENT_LEVEL = LEVELS[LEVEL_NUMBER]
                     LEVEL_LOADED_FLAG = false
                     -- update score with leftover fuel
@@ -546,6 +594,9 @@ function love.update(dt)
                     -- exit 4-landed into 2-game_play by pressing "c" to continue to next level
                     CURRENT_GAME_STATE = GAME_MANAGER[2]
                 else
+                    -- play victory small step for man sound and stop chatter
+                    CHATTER_SOUND:stop()
+                    VICTORY_SMALL_STEP_SOUND:play()
                     -- update score with leftover fuel
                     SCORE = SCORE + LANDER.fuel_s
                     -- exit 4-landed into 7-score_screen by pressing "c" to continue to score_screen
@@ -555,25 +606,35 @@ function love.update(dt)
         end
     end
 
+-----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "5-crashed" then
 
         function love.keypressed(key)
             -- exit 5_crashed into 2-game_play by pressing "r" to restart level
             if key == 'r' then
+                -- stop cash chatter
+                CRASH_PROBLEM_SOUND:stop()
+
                 LEVEL_LOADED_FLAG = false
 
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
             end
         end
+
+        -- TO DO add crash animation
     end
 
+-----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "6-out_of_bounds" then
 
         function love.keypressed(key)
             -- exit 6-out_of_bounds into 2-game_play by pressing "r" to restart level
             if key == 'r' then
+                -- stop huston we have a problem chatter
+                CRASH_PROBLEM_SOUND:stop()
+
                 LEVEL_LOADED_FLAG = false
 
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
@@ -581,6 +642,7 @@ function love.update(dt)
         end
     end
 
+-----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "7-score_screen" then
 
@@ -590,12 +652,15 @@ function love.update(dt)
                 love.event.quit()
             end
         end
+        -- TO DO add victory music and or sounds
     end
 
+-----------------------------------------------------------
+
     -- sound stuff
-    -- turn off thruster sounds if not during 2-game_play
+    -- turn off thruster sounds if not during 2-game_play state
     if CURRENT_GAME_STATE ~= "2-game_play" then
-        STOP_THRUSTER_SOUND_EFFECTS()
+        INTERACT_THRUSTER_SOUND_EFFECTS("stop")
     end
 
     -- run timer - NOT USED
