@@ -151,7 +151,8 @@ function love.load()
             love.graphics.setColor(1, 1, 1)
             love.graphics.print("        A    S    D \n\nTHRUSTER COMMANDS", LANDER.x - 48, LANDER.y + 30)
             love.graphics.print("PRESS SPACE TO START", SCREEN_X / 2, SCREEN_Y / 2)
-            love.graphics.print("PRESS p TO pause", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+            love.graphics.print("PRESS p TO PAUSE", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+            love.graphics.print("PRESS r TO RESTART ANY TIME", SCREEN_X / 2, (SCREEN_Y / 2) + 40)
             local X_location = SCREEN_X - 90
             local Y_location = SCREEN_Y - 790
             love.graphics.print("VELOCITIES ->", X_location - 180, Y_location)
@@ -220,6 +221,7 @@ function love.load()
         draw = function ()
             love.graphics.setColor(1, 1, 1)
             love.graphics.print("PRESS p TO UNPAUSE", SCREEN_X / 2, SCREEN_Y / 2)
+            love.graphics.print("PRESS r TO RESTART", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
         end
     }
 
@@ -541,11 +543,18 @@ function love.update(dt)
         end
 
 
-        -- pause game
-        -- exit 2_game_play into 3_paused by pressing "p"
+
         function love.keypressed(key)
+            -- pause game
+            -- exit 2_game_play into 3_paused by pressing "p"
             if key == 'p' then
                 CURRENT_GAME_STATE = GAME_MANAGER[3]
+            end
+            -- restart current level any time
+            -- exit 2_game_play into load then 2-game_play by pressing "r" to restart level
+            if key == 'r' then
+                CURRENT_GAME_STATE = GAME_MANAGER[2]
+                LEVEL_LOADED_FLAG = false
             end
         end
     end
@@ -562,6 +571,12 @@ function love.update(dt)
         function love.keypressed(key)
             if key == 'p' then
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
+            end
+            -- restart current level during paused
+            -- exit 3_paused into load then 2-game_play by pressing "r" to restart level
+            if key == 'r' then
+                CURRENT_GAME_STATE = GAME_MANAGER[2]
+                LEVEL_LOADED_FLAG = false
             end
         end
     end
