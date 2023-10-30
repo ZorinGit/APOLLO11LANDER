@@ -176,7 +176,7 @@ function love.load()
         end
     }
 
-    LANDER_GRAPHIC = {
+    THRUSTER_GRAPHIC = {
         draw = function ()
             if LANDER.y_thruster == true then
                 love.graphics.draw(LANDER.sprite_y_thruster, LANDER.x, LANDER.y)
@@ -189,7 +189,11 @@ function love.load()
             if LANDER.x_thruster_right == true then
                 love.graphics.draw(LANDER.sprite_x_thruster_right, LANDER.x, LANDER.y)
             end
+        end
+    }
 
+    LANDER_GRAPHIC = {
+        draw = function ()
             love.graphics.draw(LANDER.spriteA1, LANDER.x_old2, LANDER.y_old2)
             love.graphics.draw(LANDER.spriteA05, LANDER.x_old1, LANDER.y_old1)
             love.graphics.draw(LANDER.spriteA025, LANDER.x, LANDER.y)
@@ -279,7 +283,7 @@ function love.load()
     THRUSTER_LIGHT_RIGHT_SOUND = love.audio.newSource("sounds/thruster_light.mp3", "static")
     THRUSTER_LIGHT_RIGHT_SOUND:setLooping(true)
     THRUSTER_LIGHT_RIGHT_SOUND:setPosition(4, 10, 0)
-    -- TO DO possibly increase audio and add victory music
+    -- TO DO make game louder and add victory music add more music
 
     -- function to stop thruster sound effects
     SOUND_EFFECTS = {THRUSTER_HEAVY_SOUND, THRUSTER_LIGHT_LEFT_SOUND, THRUSTER_LIGHT_RIGHT_SOUND}
@@ -492,7 +496,7 @@ function love.update(dt)
             print("***LANDED***")
             -- pause chatter lower music volume and play landing chatter
             CHATTER_SOUND:pause()
-            MUSIC_SOUND:setVolume(0.05)
+            MUSIC_SOUND:setVolume(0.08)
             LAND_SUCCESS_SOUND:play()
             -- exit 2-game_play into 4-landed by proper landing
             CURRENT_GAME_STATE = GAME_MANAGER[4]
@@ -509,7 +513,7 @@ function love.update(dt)
                     print("***COLLISION***")
                     -- pause chatter lower music volume and play huston we have a problem chatter
                     CHATTER_SOUND:pause()
-                    MUSIC_SOUND:setVolume(0.05)
+                    MUSIC_SOUND:setVolume(0.08)
                     CRASH_PROBLEM_SOUND:play()
                     -- exit 2-game_play into 5-crashed by collision with surface
                     CURRENT_GAME_STATE = GAME_MANAGER[5]
@@ -530,7 +534,7 @@ function love.update(dt)
             print("***OUT OF BOUNDS***")
             -- pause chatter lower music volume and huston we have a problem chatter
             CHATTER_SOUND:pause()
-            MUSIC_SOUND:setVolume(0.05)
+            MUSIC_SOUND:setVolume(0.08)
             CRASH_PROBLEM_SOUND:play()
             -- exit 2-game_play into 6-out_of_bounds by exiting the screen
             CURRENT_GAME_STATE = GAME_MANAGER[6]
@@ -544,7 +548,6 @@ function love.update(dt)
                 CURRENT_GAME_STATE = GAME_MANAGER[3]
             end
         end
-        -- INTERACT_BACKGROUND_SOUNDS("play")
     end
 
 -----------------------------------------------------------
@@ -585,8 +588,8 @@ function love.update(dt)
                 -- iterate to next level
                 LEVEL_NUMBER = LEVEL_NUMBER + 1
                 -- switch to next level or the score_screen if no more levels
-                -- if LEVEL_NUMBER <= TOTAL_NUMBER_OF_LEVELS then
-                if LEVEL_NUMBER <= 1 then
+                if LEVEL_NUMBER <= TOTAL_NUMBER_OF_LEVELS then
+                -- if LEVEL_NUMBER <= 1 then
                     CURRENT_LEVEL = LEVELS[LEVEL_NUMBER]
                     LEVEL_LOADED_FLAG = false
                     -- update score with leftover fuel
@@ -685,6 +688,7 @@ function love.draw()
     if CURRENT_GAME_STATE == "2-game_play" then
         HUD_TEXT.draw()
         LANDER_GRAPHIC.draw()
+        THRUSTER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
     end
