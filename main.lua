@@ -96,23 +96,23 @@ function love.load()
     LEVEL_2 = {
         name = "LEVEL_2",
         lander_x = 150,
-        lander_x_velocity = 0,
+        lander_x_velocity = 5,
         lander_y = 50,
         lander_y_velocity = 0,
-        lander_fuel_s = 100,
+        lander_fuel_s = 90,
         surface_line_points = {0, 750, 500, 750, 550, 780, 920, 780, 970, 750, 1280, 750},
-        landing_surface_line_points = {1100, 748, 1135, 748}
+        landing_surface_line_points = {1100, 748, 1170, 748}
     }
 
     LEVEL_3 = {
         name = "LEVEL_3",
         lander_x = 150,
-        lander_x_velocity = 0,
+        lander_x_velocity = 8,
         lander_y = 350,
-        lander_y_velocity = 0,
-        lander_fuel_s = 100,
+        lander_y_velocity = 3,
+        lander_fuel_s = 85,
         surface_line_points = {0, 750, 500, 750, 550, 300, 920, 300, 970, 750, 1280, 750},
-        landing_surface_line_points = {1100, 748, 1135, 748}
+        landing_surface_line_points = {1100, 748, 1145, 748}
     }
 
     LEVEL_4 = {
@@ -123,13 +123,13 @@ function love.load()
         lander_y_velocity = 15,
         lander_fuel_s = 110,
         surface_line_points = {0, 750, 500, 750, 550, 450, 1000, 450, 1090, 750, 1140, 750, 1280, 450},
-        landing_surface_line_points = {1100, 748, 1135, 748}
+        landing_surface_line_points = {1095, 748, 1137, 748}
     }
 
     LEVEL_5 = {
         name = "LEVEL_5",
         lander_x = 1200,
-        lander_x_velocity = - 28,
+        lander_x_velocity = -28,
         lander_y = 600,
         lander_y_velocity = 10,
         lander_fuel_s = 85,
