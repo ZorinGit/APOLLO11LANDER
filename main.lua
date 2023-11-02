@@ -18,14 +18,14 @@ function love.load()
     LANDER.fuel_s = 0
 
     -- set lander sprites different opacities used here for ghost images used for smoother movement
-    LANDER.spriteA1 = love.graphics.newImage('sprites/Lander A1.png')
-    LANDER.spriteA05 = love.graphics.newImage('sprites/Lander A05.png')
-    LANDER.spriteA025 = love.graphics.newImage('sprites/Lander A025.png')
+    LANDER.spriteA1 = love.graphics.newImage('sprites/lander_mk2/Lander_A1.png')
+    LANDER.spriteA05 = love.graphics.newImage('sprites/lander_mk2/Lander_A05.png')
+    LANDER.spriteA025 = love.graphics.newImage('sprites/lander_mk2/Lander_A025.png')
 
     -- set lander thruster sprites
-    LANDER.sprite_y_thruster = love.graphics.newImage('sprites/Y_Thruster.png')
-    LANDER.sprite_x_thruster_left = love.graphics.newImage('sprites/X_Thruster_left.png')
-    LANDER.sprite_x_thruster_right = love.graphics.newImage('sprites/X_Thruster_right.png')
+    LANDER.sprite_y_thruster = love.graphics.newImage('sprites/thrusters_mk2/Y_Thruster.png')
+    LANDER.sprite_x_thruster_left = love.graphics.newImage('sprites/thrusters_mk2/X_Thruster_left.png')
+    LANDER.sprite_x_thruster_right = love.graphics.newImage('sprites/thrusters_mk2/X_Thruster_right.png')
 
     -- x axis lander variables
     LANDER.x = 0
