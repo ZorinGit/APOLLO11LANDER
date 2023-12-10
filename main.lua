@@ -4,7 +4,7 @@ function love.load()
     -- set resolution
     SCREEN_X = 1280
     SCREEN_Y = 800
-    love.window.setMode(SCREEN_X, SCREEN_Y)
+    love.window.setMode(SCREEN_X, SCREEN_Y, {vsync=1})
 
 
     -- set lunar properties
@@ -139,6 +139,8 @@ function love.load()
 
     -- set up level stuff
     LEVELS = {LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5}
+    -- start at level 5 for testing
+    -- LEVELS = {LEVEL_5, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_1}
     TOTAL_NUMBER_OF_LEVELS = #LEVELS
     LEVEL_NUMBER = 1
     CURRENT_LEVEL = LEVELS[LEVEL_NUMBER]
@@ -258,6 +260,16 @@ function love.load()
             -- TO DO add music credits and dedication to apollo11
         end
     }
+
+    -- for testing purposes!
+    -- COLLISION_PIXELS_DRAWING = {
+    -- draw = function ()
+    --     love.graphics.setColor(1, 0, 0)
+    --     for i, pixel in ipairs(LANDER_COLLISION_PIXELS) do
+    --         love.graphics.points(pixel.x, pixel.y)
+    --     end
+    -- end
+    -- }
 
 
     -- sounds
@@ -479,10 +491,10 @@ function love.update(dt)
 
         -- update lander collision pixels as the lander moves
         LANDER_COLLISION_PIXELS = {
-            {x = math.floor(LANDER.x + 1) , y = math.floor(LANDER.y + 1)}, -- upper left
-            {x = math.floor(LANDER.x + 25) , y = math.floor(LANDER.y + 1)}, -- upper right
-            {x = math.floor(LANDER.x + 1), y = math.floor(LANDER.y + 25)}, -- lower left
-            {x = math.floor(LANDER.x + 25), y = math.floor(LANDER.y + 25)} -- lover right
+            {x = math.floor(LANDER.x + 1), y = math.floor(LANDER.y + 1)}, -- upper left
+            {x = math.floor(LANDER.x + 25), y = math.floor(LANDER.y + 1)}, -- upper right
+            {x = math.floor(LANDER.x + 1), y = math.floor(LANDER.y + 25)}, -- lower left 1
+            {x = math.floor(LANDER.x + 25), y = math.floor(LANDER.y + 25)}, -- lower right 1
         }
 
 
@@ -524,6 +536,61 @@ function love.update(dt)
         end
             -- COLLISION_FREQUENCY_COUNTER = 0
         -- end
+
+        -- COLLISION CHECK BASED ON LINE SEGMENT INTERSECTION OR COINCIDENCE
+
+        for i = 1, #SURFACE_LINE_POINTS - 2 , 2 do
+
+            -- declare C.x C.y D.x D.y for line intersection algorithm line CD
+            local C = {x = SURFACE_LINE_POINTS[i], y = SURFACE_LINE_POINTS[i + 1]}
+            local D = {x = SURFACE_LINE_POINTS[i + 2], y = SURFACE_LINE_POINTS[i + 3]}
+
+            -- declare A.x A.y B.x B.y for line intersection algorithm line AB
+            local A = {x = LANDER_COLLISION_PIXELS[3]["x"], y = LANDER_COLLISION_PIXELS[3]["y"]}
+            local B = {x = LANDER_COLLISION_PIXELS[4]["x"], y = LANDER_COLLISION_PIXELS[4]["y"]}
+
+            -- declare numerators and denominator to be used 
+            local a_numerator = (D.x - C.x)*(C.y - A.y) - (C.x - A.x)*(D.y - C.y)
+            local b_numerator = (B.x - A.x)*(C.y - A.y) - (C.x - A.x)*(B.y - A.y)
+            local denominator = (D.x - C.x)*(B.y - A.y) - (B.x - A.x)*(D.y - C.y)
+
+            -- COLLISION CHECKS
+
+            -- if a_numerator and denominator is 0, line segments could be coincidental, further check for overlap using lander corners A.x B.x
+            if a_numerator == 0 and denominator == 0 then
+                -- check right side B.x and left A.x side of the lander if they are between C.x and D.x which means coincidental
+                if (C.x <= B.x and B.x <= D.x) or ( C.x <= A.x and A.x <= D.x ) then
+                    print("COLLISION!!!")
+                    print("a_numerator =" .. a_numerator .. " b_numerator = " .. b_numerator ..  " denominator = " .. denominator)
+                    print("A.x = " .. A.x .. " B.x = " .. B.x .. " C.x = " .. C.x .. " D.x = " .. D.x)
+                    print("***COLLISION***")
+                    -- pause chatter lower music volume and play huston we have a problem chatter
+                    CHATTER_SOUND:pause()
+                    MUSIC_SOUND:setVolume(0.08)
+                    CRASH_PROBLEM_SOUND:play()
+                    -- exit 2-game_play into 5-crashed by collision with surface
+                    CURRENT_GAME_STATE = GAME_MANAGER[5]
+                end
+                -- check for intersection
+            elseif denominator ~= 0 then
+                -- if the above are false continue by calculating a and b multiply a and b by 100 then put them in math.floor() 
+                local a = math.floor((a_numerator / denominator) * 100)
+                local b = math.floor((b_numerator / denominator) * 100)
+                -- if both a and b are between 0 and 100, line segments intersect at some point
+                if a >= 0 and a <= 100 and b >= 0 and b <= 100 then
+                    print("COLLISION!!!")
+                    print ("a = " .. a .. " b = " .. b)
+                    -- pause chatter lower music volume and play huston we have a problem chatter
+                    CHATTER_SOUND:pause()
+                    MUSIC_SOUND:setVolume(0.08)
+                    CRASH_PROBLEM_SOUND:play()
+                    -- exit 2-game_play into 5-crashed by collision with surface
+                    CURRENT_GAME_STATE = GAME_MANAGER[5]
+                end
+            end
+        end
+
+
 
 
         -- out of bounds check 
@@ -684,6 +751,9 @@ function love.update(dt)
     -- run timer - NOT USED
     ELAPSED_TIME = love.timer.getTime() - START_TIME
 
+    --for testing purposes
+    -- print("FPS: " .. tostring(love.timer.getFPS()))
+
 end
 
 
@@ -706,6 +776,8 @@ function love.draw()
         THRUSTER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
+        -- -- for testing purposes
+        -- COLLISION_PIXELS_DRAWING.draw()
     end
 
     if CURRENT_GAME_STATE == "3-paused" then
@@ -714,6 +786,8 @@ function love.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
         PAUSED_TEXT.draw()
+        -- -- for testing purposes
+        -- COLLISION_PIXELS_DRAWING.draw()
     end
 
     if CURRENT_GAME_STATE == "4-landed" then
@@ -730,6 +804,8 @@ function love.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
         CRASHED_TEXT.draw()
+        -- -- for testing purposes
+        -- COLLISION_PIXELS_DRAWING.draw()
     end
 
     if CURRENT_GAME_STATE == "6-out_of_bounds" then
