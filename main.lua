@@ -53,7 +53,7 @@ function love.load()
     -- initialize lander collision pixels surface line points and line collision pixels and landing zone surface and score
     LANDER_COLLISION_PIXELS = {}
     SURFACE_LINE_POINTS = {}
-    LINE_COLLISION_PIXELS = {}
+    -- LINE_COLLISION_PIXELS = {}
     LANDING_SURFACE_LINE_POINTS = {}
     SCORE = 0
 
@@ -139,8 +139,6 @@ function love.load()
 
     -- set up level stuff
     LEVELS = {LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5}
-    -- start at level 5 for testing
-    -- LEVELS = {LEVEL_5, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_1}
     TOTAL_NUMBER_OF_LEVELS = #LEVELS
     LEVEL_NUMBER = 1
     CURRENT_LEVEL = LEVELS[LEVEL_NUMBER]
@@ -261,18 +259,8 @@ function love.load()
         end
     }
 
-    -- for testing purposes!
-    -- COLLISION_PIXELS_DRAWING = {
-    -- draw = function ()
-    --     love.graphics.setColor(1, 0, 0)
-    --     for i, pixel in ipairs(LANDER_COLLISION_PIXELS) do
-    --         love.graphics.points(pixel.x, pixel.y)
-    --     end
-    -- end
-    -- }
 
-
-    -- sounds
+    -- SOUNDS
     CHATTER_SOUND = love.audio.newSource("sounds/chatter.mp3", "stream")
     CHATTER_SOUND:setLooping(true)
     CHATTER_SOUND:setVolume(0.03)
@@ -338,28 +326,28 @@ function love.update(dt)
             {x = LANDER.x + 24, y = LANDER.y + 24} -- lover right
         }
 
-        -- load line collision pixels for this level
+        -- -- load line collision pixels for this level
 
-        LINE_COLLISION_PIXELS = {}
+        -- LINE_COLLISION_PIXELS = {}
 
-        -- populating table for all collision pixels in the surface line based on the SURFACE_LINE_POINTS
-        -- NOTE WILL NOT HANDLE VERTICAL LINES - divide by 0
-        for i = 1, #SURFACE_LINE_POINTS - 2 , 2 do
-            -- declare x and y values for point1 and point2
-            local x1 = SURFACE_LINE_POINTS[i]
-            local y1 = SURFACE_LINE_POINTS[i + 1]
-            local x2 = SURFACE_LINE_POINTS[i + 2]
-            local y2 = SURFACE_LINE_POINTS[i + 3]
-            -- using y = mx + b line formula
-            -- calculate m 
-            local m = (y2 - y1) / (x2 - x1)
-            -- calculate b
-            local b = y1 - (m * x1)
-            -- filling in the table using the line formula
-            for j = x1, x2 do
-                table.insert(LINE_COLLISION_PIXELS, {x = j, y = math.floor((m * j) + b)})
-            end
-        end
+        -- -- populating table for all collision pixels in the surface line based on the SURFACE_LINE_POINTS
+        -- -- NOTE WILL NOT HANDLE VERTICAL LINES - divide by 0
+        -- for i = 1, #SURFACE_LINE_POINTS - 2 , 2 do
+        --     -- declare x and y values for point1 and point2
+        --     local x1 = SURFACE_LINE_POINTS[i]
+        --     local y1 = SURFACE_LINE_POINTS[i + 1]
+        --     local x2 = SURFACE_LINE_POINTS[i + 2]
+        --     local y2 = SURFACE_LINE_POINTS[i + 3]
+        --     -- using y = mx + b line formula
+        --     -- calculate m 
+        --     local m = (y2 - y1) / (x2 - x1)
+        --     -- calculate b
+        --     local b = y1 - (m * x1)
+        --     -- filling in the table using the line formula
+        --     for j = x1, x2 do
+        --         table.insert(LINE_COLLISION_PIXELS, {x = j, y = math.floor((m * j) + b)})
+        --     end
+        -- end
 
         -- finish loading level
         LEVEL_LOADED_FLAG = true
@@ -517,25 +505,26 @@ function love.update(dt)
         end
 
 
-        -- crash check
-        -- collision with surface check and counter used to reduce the check frequency to 50 times a second for a smoother game
-        -- COLLISION_FREQUENCY_COUNTER = COLLISION_FREQUENCY_COUNTER + dt
-        -- if COLLISION_FREQUENCY_COUNTER > 0.02 then
-        for i = 3, #LANDER_COLLISION_PIXELS do
-            for j = 1, #LINE_COLLISION_PIXELS do
-                if LANDER_COLLISION_PIXELS[i]["x"] == LINE_COLLISION_PIXELS[j]["x"] and LANDER_COLLISION_PIXELS[i]["y"] == LINE_COLLISION_PIXELS[j]["y"] then
-                    print("***COLLISION***")
-                    -- pause chatter lower music volume and play huston we have a problem chatter
-                    CHATTER_SOUND:pause()
-                    MUSIC_SOUND:setVolume(0.08)
-                    CRASH_PROBLEM_SOUND:play()
-                    -- exit 2-game_play into 5-crashed by collision with surface
-                    CURRENT_GAME_STATE = GAME_MANAGER[5]
-                end
-            end
-        end
-            -- COLLISION_FREQUENCY_COUNTER = 0
+        -- -- crash check
+        -- -- collision with surface check and counter used to reduce the check frequency to 50 times a second for a smoother game
+        -- -- COLLISION_FREQUENCY_COUNTER = COLLISION_FREQUENCY_COUNTER + dt
+        -- -- if COLLISION_FREQUENCY_COUNTER > 0.02 then
+        -- for i = 3, #LANDER_COLLISION_PIXELS do
+        --     for j = 1, #LINE_COLLISION_PIXELS do
+        --         if LANDER_COLLISION_PIXELS[i]["x"] == LINE_COLLISION_PIXELS[j]["x"] and LANDER_COLLISION_PIXELS[i]["y"] == LINE_COLLISION_PIXELS[j]["y"] then
+        --             print("***COLLISION***")
+        --             -- pause chatter lower music volume and play huston we have a problem chatter
+        --             CHATTER_SOUND:pause()
+        --             MUSIC_SOUND:setVolume(0.08)
+        --             CRASH_PROBLEM_SOUND:play()
+        --             -- exit 2-game_play into 5-crashed by collision with surface
+        --             CURRENT_GAME_STATE = GAME_MANAGER[5]
+        --         end
+        --     end
         -- end
+        --     -- COLLISION_FREQUENCY_COUNTER = 0
+        -- -- end
+
 
         -- COLLISION CHECK BASED ON LINE SEGMENT INTERSECTION OR COINCIDENCE
 
@@ -563,7 +552,6 @@ function love.update(dt)
                     print("COLLISION!!!")
                     print("a_numerator =" .. a_numerator .. " b_numerator = " .. b_numerator ..  " denominator = " .. denominator)
                     print("A.x = " .. A.x .. " B.x = " .. B.x .. " C.x = " .. C.x .. " D.x = " .. D.x)
-                    print("***COLLISION***")
                     -- pause chatter lower music volume and play huston we have a problem chatter
                     CHATTER_SOUND:pause()
                     MUSIC_SOUND:setVolume(0.08)
@@ -589,8 +577,6 @@ function love.update(dt)
                 end
             end
         end
-
-
 
 
         -- out of bounds check 
@@ -776,8 +762,6 @@ function love.draw()
         THRUSTER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
-        -- -- for testing purposes
-        -- COLLISION_PIXELS_DRAWING.draw()
     end
 
     if CURRENT_GAME_STATE == "3-paused" then
@@ -786,8 +770,6 @@ function love.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
         PAUSED_TEXT.draw()
-        -- -- for testing purposes
-        -- COLLISION_PIXELS_DRAWING.draw()
     end
 
     if CURRENT_GAME_STATE == "4-landed" then
@@ -804,8 +786,6 @@ function love.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
         CRASHED_TEXT.draw()
-        -- -- for testing purposes
-        -- COLLISION_PIXELS_DRAWING.draw()
     end
 
     if CURRENT_GAME_STATE == "6-out_of_bounds" then
