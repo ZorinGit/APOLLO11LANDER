@@ -49,6 +49,14 @@ function love.load()
     LANDER.y_total_thruster_and_lunar_force_N = LANDER.y_only_lunar_force_N + LANDER.y_only_thruster_force_N
     LANDER.y_total_thruster_and_lunar_acceleration = tonumber(string.format("%.2f", (LANDER.y_total_thruster_and_lunar_force_N / LANDER.mass_kg)))
 
+    -- transition curtain rectangle
+    TRANSITION_CURTAIN = {}
+    TRANSITION_CURTAIN.mode = "fill"
+    TRANSITION_CURTAIN.x = 0
+    TRANSITION_CURTAIN.y = 0
+    TRANSITION_CURTAIN.width = SCREEN_X
+    TRANSITION_CURTAIN.height = SCREEN_Y
+    TRANSITION_CURTAIN.flag = true
 
     -- initialize lander collision pixels surface line points and line collision pixels and landing zone surface and score
     LANDER_COLLISION_PIXELS = {}
@@ -161,6 +169,15 @@ function love.load()
             love.graphics.print("IF LANDER EXITS THE SCREEN IT WILL BECOME LOST IN SPACE ->", X_location - 320, Y_location + 150)
             love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 25, LANDING_SURFACE_LINE_POINTS[2] - 20)
             -- TO DO make tutorial text nicer, add score/fuel explanation
+        end
+    }
+
+    TRANSITION_CURTAIN_GRAPHIC = {
+        draw = function ()
+            love.graphics.setColor(0, 0, 0)
+            if TRANSITION_CURTAIN.flag == true then
+                love.graphics.rectangle(TRANSITION_CURTAIN.mode, TRANSITION_CURTAIN.x, TRANSITION_CURTAIN.y, TRANSITION_CURTAIN.width, TRANSITION_CURTAIN.height)
+            end
         end
     }
 
@@ -326,6 +343,10 @@ function love.update(dt)
             {x = LANDER.x + 24, y = LANDER.y + 24} -- lover right
         }
 
+        -- initialize transition curtain
+        TRANSITION_CURTAIN.x = 0
+        TRANSITION_CURTAIN.flag = true
+
         -- -- load line collision pixels for this level
 
         -- LINE_COLLISION_PIXELS = {}
@@ -484,6 +505,14 @@ function love.update(dt)
             {x = math.floor(LANDER.x + 1), y = math.floor(LANDER.y + 25)}, -- lower left 1
             {x = math.floor(LANDER.x + 25), y = math.floor(LANDER.y + 25)}, -- lower right 1
         }
+
+
+        -- move transition curtain off the screen
+        if TRANSITION_CURTAIN.x < SCREEN_X then
+            TRANSITION_CURTAIN.x = TRANSITION_CURTAIN.x + dt*1300
+        else
+            TRANSITION_CURTAIN.flag = false
+        end
 
 
         -- landing zone check
@@ -762,6 +791,7 @@ function love.draw()
         THRUSTER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
+        TRANSITION_CURTAIN_GRAPHIC.draw()
     end
 
     if CURRENT_GAME_STATE == "3-paused" then
