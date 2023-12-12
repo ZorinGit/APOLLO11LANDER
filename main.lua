@@ -84,7 +84,7 @@ function love.load()
 
 
     -- game manager setting up game states
-    GAME_MANAGER = {"1-tutorial", "2-game_play", "3-paused", "4-landed", "5-crashed", "6-out_of_bounds", "7-score_screen"}
+    GAME_MANAGER = {"1-tutorial", "2-game_play", "3-paused", "4-landed", "5-crashed", "6-out_of_bounds", "7-score_screen", "8-loaded"}
     CURRENT_GAME_STATE = GAME_MANAGER[1]
 
 
@@ -273,6 +273,12 @@ function love.load()
             love.graphics.print("CONGRATULATIONS! YOUR FINAL SCORE IS: " .. math.floor(SCORE), SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PLEASE PRESS x TO EXIT GAME!", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
             -- TO DO add music credits and dedication to apollo11
+        end
+    }
+
+    LOADED_SCREEN_TEXT={
+        draw = function ()
+            love.graphics.print("PRESS SPACE TO START", SCREEN_X / 2, SCREEN_Y / 2)
         end
     }
 
@@ -507,14 +513,6 @@ function love.update(dt)
         }
 
 
-        -- move transition curtain off the screen
-        if TRANSITION_CURTAIN.x < SCREEN_X then
-            TRANSITION_CURTAIN.x = TRANSITION_CURTAIN.x + dt*1300
-        else
-            TRANSITION_CURTAIN.flag = false
-        end
-
-
         -- landing zone check
         -- check lower left lander collision pixel against the y landing level
         if LANDER_COLLISION_PIXELS[3]["y"] == LANDING_SURFACE_LINE_POINTS[2] and
@@ -633,9 +631,9 @@ function love.update(dt)
                 CURRENT_GAME_STATE = GAME_MANAGER[3]
             end
             -- restart current level any time
-            -- exit 2_game_play into load then 2-game_play by pressing "r" to restart level
+            -- exit 2_game_play into load then 8-loaded by pressing "r" to restart level
             if key == 'r' then
-                CURRENT_GAME_STATE = GAME_MANAGER[2]
+                CURRENT_GAME_STATE = GAME_MANAGER[8]
                 LEVEL_LOADED_FLAG = false
             end
         end
@@ -655,9 +653,9 @@ function love.update(dt)
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
             end
             -- restart current level during paused
-            -- exit 3_paused into load then 2-game_play by pressing "r" to restart level
+            -- exit 3_paused into load then 8-loaded by pressing "r" to restart level
             if key == 'r' then
-                CURRENT_GAME_STATE = GAME_MANAGER[2]
+                CURRENT_GAME_STATE = GAME_MANAGER[8]
                 LEVEL_LOADED_FLAG = false
             end
         end
@@ -670,11 +668,11 @@ function love.update(dt)
 
 
         function love.keypressed(key)
-            -- exit 4-landed into 2-game_play by pressing "r" to restart level
+            -- exit 4-landed into 8-loaded by pressing "r" to restart level
             if key == 'r' then
                 -- stop landing chatter
                 LAND_SUCCESS_SOUND:stop()
-                CURRENT_GAME_STATE = GAME_MANAGER[2]
+                CURRENT_GAME_STATE = GAME_MANAGER[8]
                 LEVEL_LOADED_FLAG = false
             end
 
@@ -691,8 +689,8 @@ function love.update(dt)
                     LEVEL_LOADED_FLAG = false
                     -- update score with leftover fuel
                     SCORE = SCORE + LANDER.fuel_s
-                    -- exit 4-landed into 2-game_play by pressing "c" to continue to next level
-                    CURRENT_GAME_STATE = GAME_MANAGER[2]
+                    -- exit 4-landed into 8-loaded by pressing "c" to continue to next level
+                    CURRENT_GAME_STATE = GAME_MANAGER[8]
                 else
                     -- play victory small step for man sound and stop chatter
                     CHATTER_SOUND:stop()
@@ -711,14 +709,14 @@ function love.update(dt)
     if CURRENT_GAME_STATE == "5-crashed" then
 
         function love.keypressed(key)
-            -- exit 5_crashed into 2-game_play by pressing "r" to restart level
+            -- exit 5_crashed into 8-loaded by pressing "r" to restart level
             if key == 'r' then
                 -- stop cash chatter
                 CRASH_PROBLEM_SOUND:stop()
 
                 LEVEL_LOADED_FLAG = false
 
-                CURRENT_GAME_STATE = GAME_MANAGER[2]
+                CURRENT_GAME_STATE = GAME_MANAGER[8]
             end
         end
 
@@ -730,14 +728,14 @@ function love.update(dt)
     if CURRENT_GAME_STATE == "6-out_of_bounds" then
 
         function love.keypressed(key)
-            -- exit 6-out_of_bounds into 2-game_play by pressing "r" to restart level
+            -- exit 6-out_of_bounds into 8-loaded by pressing "r" to restart level
             if key == 'r' then
                 -- stop huston we have a problem chatter
                 CRASH_PROBLEM_SOUND:stop()
 
                 LEVEL_LOADED_FLAG = false
 
-                CURRENT_GAME_STATE = GAME_MANAGER[2]
+                CURRENT_GAME_STATE = GAME_MANAGER[8]
             end
         end
     end
@@ -754,6 +752,25 @@ function love.update(dt)
         end
         -- TO DO add victory music and or sounds
     end
+
+-----------------------------------------------------------
+
+    if CURRENT_GAME_STATE == "8-loaded" then
+        -- move transition curtain off the screen
+        if TRANSITION_CURTAIN.x < SCREEN_X then
+            TRANSITION_CURTAIN.x = TRANSITION_CURTAIN.x + dt*1300
+        else
+            TRANSITION_CURTAIN.flag = false
+        end
+
+        -- exit 8-loaded into 2-game_play by pressing "space"
+        function love.keypressed(key)
+            if key == 'space' then
+             CURRENT_GAME_STATE = GAME_MANAGER[2]
+            end
+        end
+    end
+
 
 -----------------------------------------------------------
 
@@ -791,7 +808,6 @@ function love.draw()
         THRUSTER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
-        TRANSITION_CURTAIN_GRAPHIC.draw()
     end
 
     if CURRENT_GAME_STATE == "3-paused" then
@@ -827,6 +843,15 @@ function love.draw()
 
     if CURRENT_GAME_STATE == "7-score_screen" then
         SCORE_SCREEN_TEXT.draw(SCORE)
+    end
+
+    if CURRENT_GAME_STATE == "8-loaded" then
+        HUD_TEXT.draw()
+        LANDER_GRAPHIC.draw()
+        LUNAR_SURFACE_GRAPHIC.draw()
+        LANDING_ZONE_GRAPHIC.draw()
+        LOADED_SCREEN_TEXT.draw()
+        TRANSITION_CURTAIN_GRAPHIC.draw()
     end
 
 end
