@@ -82,6 +82,9 @@ function love.load()
     -- start timer NOT USED
     START_TIME = love.timer.getTime()
 
+    -- dt timers
+    DT_TIMER_FOR_SOUND_CONTROL = 0
+
 
     -- game manager setting up game states
     GAME_MANAGER = {"1-tutorial", "2-game_play", "3-paused", "4-landed", "5-crashed", "6-out_of_bounds", "7-score_screen", "8-loaded"}
@@ -284,28 +287,41 @@ function love.load()
 
 
     -- SOUNDS
+    SOUND_LEVELS = {0, 0.25, 0.5, 1, 2, 4, 8, 16}
+    SOUND_LEVEL_INDEX = 4
+    MASTER_VOLUME_MODIFIER = SOUND_LEVELS[SOUND_LEVEL_INDEX]
     CHATTER_SOUND = love.audio.newSource("sounds/chatter.mp3", "stream")
+    CHATTER_SOUND_BASE_VOL = 0.03
+    CHATTER_SOUND:setVolume(CHATTER_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     CHATTER_SOUND:setLooping(true)
-    CHATTER_SOUND:setVolume(0.03)
     MUSIC_SOUND = love.audio.newSource("sounds/music.mp3", "stream")
+    MUSIC_SOUND_BASE_VOL = 0.3
+    MUSIC_SOUND:setVolume(MUSIC_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     MUSIC_SOUND:setLooping(true)
-    MUSIC_SOUND:setVolume(0.3)
     CRASH_PROBLEM_SOUND = love.audio.newSource("sounds/crash_problem.mp3", "static")
+    CRASH_PROBLEM_SOUND_BASE_VOL = 0.045
+    CRASH_PROBLEM_SOUND:setVolume(CRASH_PROBLEM_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     CRASH_PROBLEM_SOUND:setLooping(false)
-    CRASH_PROBLEM_SOUND:setVolume(0.045)
     LAND_SUCCESS_SOUND = love.audio.newSource("sounds/land_success.mp3", "static")
+    LAND_SUCCESS_SOUND_BASE_VOL = 0.09
+    LAND_SUCCESS_SOUND:setVolume(LAND_SUCCESS_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     LAND_SUCCESS_SOUND:setLooping(false)
-    LAND_SUCCESS_SOUND:setVolume(0.09)
     VICTORY_SMALL_STEP_SOUND = love.audio.newSource("sounds/victory_small_step.mp3", "static")
+    VICTORY_SMALL_STEP_SOUND_BASE_VOL = 0.08
+    VICTORY_SMALL_STEP_SOUND:setVolume(VICTORY_SMALL_STEP_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     VICTORY_SMALL_STEP_SOUND:setLooping(false)
-    VICTORY_SMALL_STEP_SOUND:setVolume(0.07)
     THRUSTER_HEAVY_SOUND = love.audio.newSource("sounds/thruster_heavy.mp3", "static")
+    THRUSTER_HEAVY_SOUND_BASE_VOL = 0.07
+    THRUSTER_HEAVY_SOUND:setVolume(THRUSTER_HEAVY_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     THRUSTER_HEAVY_SOUND:setLooping(true)
-    THRUSTER_HEAVY_SOUND:setVolume(0.08)
     THRUSTER_LIGHT_LEFT_SOUND = love.audio.newSource("sounds/thruster_light.mp3", "static")
+    THRUSTER_LIGHT_LEFT_SOUND_BASE_VOL = 1
+    THRUSTER_LIGHT_LEFT_SOUND:setVolume(THRUSTER_LIGHT_LEFT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     THRUSTER_LIGHT_LEFT_SOUND:setLooping(true)
     THRUSTER_LIGHT_LEFT_SOUND:setPosition(-4, 10, 0)
     THRUSTER_LIGHT_RIGHT_SOUND = love.audio.newSource("sounds/thruster_light.mp3", "static")
+    THRUSTER_LIGHT_RIGHT_SOUND_BASE_VOL = 1
+    THRUSTER_LIGHT_RIGHT_SOUND:setVolume(THRUSTER_LIGHT_RIGHT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     THRUSTER_LIGHT_RIGHT_SOUND:setLooping(true)
     THRUSTER_LIGHT_RIGHT_SOUND:setPosition(4, 10, 0)
     -- TO DO make game louder and add victory music add more music
@@ -382,11 +398,27 @@ function love.update(dt)
 
 -----------------------------------------------------------
 
+    -- SOUND CONTROLS
+    DT_TIMER_FOR_SOUND_CONTROL = DT_TIMER_FOR_SOUND_CONTROL + dt
+    if DT_TIMER_FOR_SOUND_CONTROL > 0.125 then
+        if SOUND_LEVEL_INDEX < #SOUND_LEVELS and love.keyboard.isDown('up') then
+            SOUND_LEVEL_INDEX = SOUND_LEVEL_INDEX + 1
+        end
+        if 1 < SOUND_LEVEL_INDEX and love.keyboard.isDown('down') then
+            SOUND_LEVEL_INDEX = SOUND_LEVEL_INDEX - 1
+        end
+        DT_TIMER_FOR_SOUND_CONTROL = 0
+    end
+
+    MASTER_VOLUME_MODIFIER = SOUND_LEVELS[SOUND_LEVEL_INDEX]
+
+-----------------------------------------------------------
+
     if CURRENT_GAME_STATE == "1-tutorial" then
 
         -- exit 1-tutorial into 2-game_play by pressing "space"
         function love.keypressed(key)
-               if key == 'space' then
+            if key == 'space' then
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
             end
         end
@@ -399,9 +431,13 @@ function love.update(dt)
         -- sound stuff 
         -- start sounds and reset volumes
         CHATTER_SOUND:play()
-        CHATTER_SOUND:setVolume(0.03)
+        CHATTER_SOUND:setVolume(CHATTER_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
         MUSIC_SOUND:play()
-        MUSIC_SOUND:setVolume(0.3)
+        MUSIC_SOUND:setVolume(MUSIC_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+        THRUSTER_HEAVY_SOUND:setVolume(THRUSTER_HEAVY_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+        THRUSTER_LIGHT_LEFT_SOUND:setVolume(THRUSTER_LIGHT_LEFT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+        THRUSTER_LIGHT_RIGHT_SOUND:setVolume(THRUSTER_LIGHT_RIGHT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+
 
 
         -- x axis trusters and acceleration left or right
@@ -524,9 +560,8 @@ function love.update(dt)
             -- change landing flag to true
             print("***LANDED***")
             -- pause chatter lower music volume and play landing chatter
-            CHATTER_SOUND:pause()
-            MUSIC_SOUND:setVolume(0.08)
             LAND_SUCCESS_SOUND:play()
+            CHATTER_SOUND:pause()
             -- exit 2-game_play into 4-landed by proper landing
             CURRENT_GAME_STATE = GAME_MANAGER[4]
         end
@@ -580,9 +615,8 @@ function love.update(dt)
                     print("a_numerator =" .. a_numerator .. " b_numerator = " .. b_numerator ..  " denominator = " .. denominator)
                     print("A.x = " .. A.x .. " B.x = " .. B.x .. " C.x = " .. C.x .. " D.x = " .. D.x)
                     -- pause chatter lower music volume and play huston we have a problem chatter
-                    CHATTER_SOUND:pause()
-                    MUSIC_SOUND:setVolume(0.08)
                     CRASH_PROBLEM_SOUND:play()
+                    CHATTER_SOUND:pause()
                     -- exit 2-game_play into 5-crashed by collision with surface
                     CURRENT_GAME_STATE = GAME_MANAGER[5]
                 end
@@ -596,9 +630,8 @@ function love.update(dt)
                     print("COLLISION!!!")
                     print ("a = " .. a .. " b = " .. b)
                     -- pause chatter lower music volume and play huston we have a problem chatter
-                    CHATTER_SOUND:pause()
-                    MUSIC_SOUND:setVolume(0.08)
                     CRASH_PROBLEM_SOUND:play()
+                    CHATTER_SOUND:pause()
                     -- exit 2-game_play into 5-crashed by collision with surface
                     CURRENT_GAME_STATE = GAME_MANAGER[5]
                 end
@@ -615,9 +648,8 @@ function love.update(dt)
             LANDER_COLLISION_PIXELS[3]["x"] > 1280 then
             print("***OUT OF BOUNDS***")
             -- pause chatter lower music volume and huston we have a problem chatter
-            CHATTER_SOUND:pause()
-            MUSIC_SOUND:setVolume(0.08)
             CRASH_PROBLEM_SOUND:play()
+            CHATTER_SOUND:pause()
             -- exit 2-game_play into 6-out_of_bounds by exiting the screen
             CURRENT_GAME_STATE = GAME_MANAGER[6]
         end
@@ -643,9 +675,9 @@ function love.update(dt)
 
     if CURRENT_GAME_STATE == "3-paused" then
 
-        -- lower background sounds 
-        CHATTER_SOUND:setVolume(0.002)
-        MUSIC_SOUND:setVolume(0.05)
+        -- lower background sounds
+        CHATTER_SOUND:setVolume((CHATTER_SOUND_BASE_VOL - 0.028) * MASTER_VOLUME_MODIFIER)
+        MUSIC_SOUND:setVolume((MUSIC_SOUND_BASE_VOL - 0.25) * MASTER_VOLUME_MODIFIER)
 
         -- exit 3_paused into 2-game_play by pressing "p"
         function love.keypressed(key)
@@ -665,6 +697,9 @@ function love.update(dt)
 
     if CURRENT_GAME_STATE == "4-landed" then
 
+        -- landed sounds
+        MUSIC_SOUND:setVolume((MUSIC_SOUND_BASE_VOL - 0.22) * MASTER_VOLUME_MODIFIER)
+        LAND_SUCCESS_SOUND:setVolume(LAND_SUCCESS_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
 
 
         function love.keypressed(key)
@@ -708,6 +743,10 @@ function love.update(dt)
 
     if CURRENT_GAME_STATE == "5-crashed" then
 
+        --crashed sounds
+        MUSIC_SOUND:setVolume((MUSIC_SOUND_BASE_VOL - 0.22) * MASTER_VOLUME_MODIFIER)
+        CRASH_PROBLEM_SOUND:setVolume(CRASH_PROBLEM_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+
         function love.keypressed(key)
             -- exit 5_crashed into 8-loaded by pressing "r" to restart level
             if key == 'r' then
@@ -727,6 +766,10 @@ function love.update(dt)
 
     if CURRENT_GAME_STATE == "6-out_of_bounds" then
 
+        -- crashed sounds
+        MUSIC_SOUND:setVolume((MUSIC_SOUND_BASE_VOL - 0.22) * MASTER_VOLUME_MODIFIER)
+        CRASH_PROBLEM_SOUND:setVolume(CRASH_PROBLEM_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+
         function love.keypressed(key)
             -- exit 6-out_of_bounds into 8-loaded by pressing "r" to restart level
             if key == 'r' then
@@ -743,6 +786,10 @@ function love.update(dt)
 -----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "7-score_screen" then
+
+        -- score sounds
+        MUSIC_SOUND:setVolume((MUSIC_SOUND_BASE_VOL - 0.22) * MASTER_VOLUME_MODIFIER)
+        VICTORY_SMALL_STEP_SOUND:setVolume(0.08)
 
         function love.keypressed(key)
             -- exit 7-out_of_bounds quitting the game window with "x"
@@ -779,6 +826,7 @@ function love.update(dt)
     if CURRENT_GAME_STATE ~= "2-game_play" then
         INTERACT_THRUSTER_SOUND_EFFECTS("stop")
     end
+
 
     -- run timer - NOT USED
     ELAPSED_TIME = love.timer.getTime() - START_TIME
