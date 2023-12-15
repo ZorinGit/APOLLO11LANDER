@@ -49,6 +49,23 @@ function love.load()
     LANDER.y_total_thruster_and_lunar_force_N = LANDER.y_only_lunar_force_N + LANDER.y_only_thruster_force_N
     LANDER.y_total_thruster_and_lunar_acceleration = tonumber(string.format("%.2f", (LANDER.y_total_thruster_and_lunar_force_N / LANDER.mass_kg)))
 
+    -- crash animations
+    CRASH_ANIMATION_INDEX = 1
+    DUST_CRASH_ANIMATION = {}
+    table.insert(DUST_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/dust_crash01.png'))
+    table.insert(DUST_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/dust_crash02.png'))
+    table.insert(DUST_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/dust_crash03.png'))
+    table.insert(DUST_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/dust_crash04.png'))
+    table.insert(DUST_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/dust_crash05.png'))
+    CURRENT_DUST_CRASH_FRAME = DUST_CRASH_ANIMATION[CRASH_ANIMATION_INDEX]
+    LANDER_CRASH_ANIMATION = {}
+    table.insert(LANDER_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/lander_crash01.png'))
+    table.insert(LANDER_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/lander_crash02.png'))
+    table.insert(LANDER_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/lander_crash03.png'))
+    table.insert(LANDER_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/lander_crash04.png'))
+    table.insert(LANDER_CRASH_ANIMATION, love.graphics.newImage('sprites/lander_crash/lander_crash05.png'))
+    CURRENT_LANDER_CRASH_FRAME = LANDER_CRASH_ANIMATION[CRASH_ANIMATION_INDEX]
+
     -- transition curtain rectangle
     TRANSITION_CURTAIN = {}
     TRANSITION_CURTAIN.mode = "fill"
@@ -84,6 +101,7 @@ function love.load()
 
     -- dt timers
     DT_TIMER_FOR_SOUND_CONTROL = 0
+    DT_TIMER_FOR_CRASH_ANIMATION = 0
 
 
     -- game manager setting up game states
@@ -171,7 +189,7 @@ function love.load()
             love.graphics.print("THRUSTERS WILL NOT FIRE IF FUEL ->\n                   RUNS OUT", X_location - 260, Y_location + 34)
             love.graphics.print("IF LANDER EXITS THE SCREEN IT WILL BECOME LOST IN SPACE ->", X_location - 320, Y_location + 150)
             love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 25, LANDING_SURFACE_LINE_POINTS[2] - 20)
-            -- TO DO make tutorial text nicer, add score/fuel explanation
+            -- TO DO make tutorial text nicer, add score/fuel explanation, add up and down arrows control sound
         end
     }
 
@@ -279,9 +297,16 @@ function love.load()
         end
     }
 
-    LOADED_SCREEN_TEXT={
+    LOADED_SCREEN_TEXT = {
         draw = function ()
             love.graphics.print("PRESS SPACE TO START", SCREEN_X / 2, SCREEN_Y / 2)
+        end
+    }
+
+    CRASH_ANIMATION = {
+        draw = function ()
+            love.graphics.draw(CURRENT_LANDER_CRASH_FRAME, LANDER.x, LANDER.y)
+            love.graphics.draw(CURRENT_DUST_CRASH_FRAME, LANDER.x, LANDER.y)
         end
     }
 
@@ -324,7 +349,24 @@ function love.load()
     THRUSTER_LIGHT_RIGHT_SOUND:setVolume(THRUSTER_LIGHT_RIGHT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     THRUSTER_LIGHT_RIGHT_SOUND:setLooping(true)
     THRUSTER_LIGHT_RIGHT_SOUND:setPosition(4, 10, 0)
-    -- TO DO make game louder and add victory music add more music
+    THUD_BIG_SOUND = love.audio.newSource("sounds/thud_big.wav", "static")
+    THUD_BIG_SOUND_BASE_VOL = 0.7
+    THUD_BIG_SOUND:setVolume(THUD_BIG_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+    THUD_BIG_SOUND:setLooping(false)
+    THUD_SMALL_SOUND = love.audio.newSource("sounds/thud_small.mp3", "static")
+    THUD_SMALL_SOUND_BASE_VOL = 0.35
+    THUD_SMALL_SOUND:setVolume(THUD_SMALL_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+    THUD_SMALL_SOUND:setLooping(false)
+    -- TO DO add victory music add more music
+
+    -- helper function to play big or small thud depending on speed during crash
+    function CHOSE_PLAY_THUD_HELPER()
+        if VELOCITY_MAGNITUDE > 15 then
+            THUD_BIG_SOUND:play()
+        else
+            THUD_SMALL_SOUND:play()
+        end
+    end
 
     -- function to stop thruster sound effects
     SOUND_EFFECTS = {THRUSTER_HEAVY_SOUND, THRUSTER_LIGHT_LEFT_SOUND, THRUSTER_LIGHT_RIGHT_SOUND}
@@ -368,6 +410,9 @@ function love.update(dt)
         -- initialize transition curtain
         TRANSITION_CURTAIN.x = 0
         TRANSITION_CURTAIN.flag = true
+
+        -- reset crash animation
+        CRASH_ANIMATION_INDEX = 1
 
         -- -- load line collision pixels for this level
 
@@ -614,7 +659,8 @@ function love.update(dt)
                     print("COLLISION!!!")
                     print("a_numerator =" .. a_numerator .. " b_numerator = " .. b_numerator ..  " denominator = " .. denominator)
                     print("A.x = " .. A.x .. " B.x = " .. B.x .. " C.x = " .. C.x .. " D.x = " .. D.x)
-                    -- pause chatter lower music volume and play huston we have a problem chatter
+                    -- pause chatter lower music volume and play huston we have a problem chatter and thud
+                    CHOSE_PLAY_THUD_HELPER()
                     CRASH_PROBLEM_SOUND:play()
                     CHATTER_SOUND:pause()
                     -- exit 2-game_play into 5-crashed by collision with surface
@@ -629,7 +675,8 @@ function love.update(dt)
                 if a >= 0 and a <= 100 and b >= 0 and b <= 100 then
                     print("COLLISION!!!")
                     print ("a = " .. a .. " b = " .. b)
-                    -- pause chatter lower music volume and play huston we have a problem chatter
+                    -- pause chatter lower music volume and play huston we have a problem chatter and thud
+                    CHOSE_PLAY_THUD_HELPER()
                     CRASH_PROBLEM_SOUND:play()
                     CHATTER_SOUND:pause()
                     -- exit 2-game_play into 5-crashed by collision with surface
@@ -746,11 +793,15 @@ function love.update(dt)
         --crashed sounds
         MUSIC_SOUND:setVolume((MUSIC_SOUND_BASE_VOL - 0.22) * MASTER_VOLUME_MODIFIER)
         CRASH_PROBLEM_SOUND:setVolume(CRASH_PROBLEM_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+        THUD_BIG_SOUND:setVolume(THUD_BIG_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+        THUD_SMALL_SOUND:setVolume(THUD_SMALL_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
 
         function love.keypressed(key)
             -- exit 5_crashed into 8-loaded by pressing "r" to restart level
             if key == 'r' then
                 -- stop cash chatter
+                THUD_SMALL_SOUND:stop()
+                THUD_BIG_SOUND:stop()
                 CRASH_PROBLEM_SOUND:stop()
 
                 LEVEL_LOADED_FLAG = false
@@ -759,7 +810,14 @@ function love.update(dt)
             end
         end
 
-        -- TO DO add crash animation
+        -- crash animation
+        DT_TIMER_FOR_CRASH_ANIMATION = DT_TIMER_FOR_CRASH_ANIMATION + dt
+        if CRASH_ANIMATION_INDEX < #DUST_CRASH_ANIMATION and DT_TIMER_FOR_CRASH_ANIMATION > 0.14 then
+            CRASH_ANIMATION_INDEX = CRASH_ANIMATION_INDEX + 1
+            CURRENT_DUST_CRASH_FRAME = DUST_CRASH_ANIMATION[CRASH_ANIMATION_INDEX]
+            CURRENT_LANDER_CRASH_FRAME = LANDER_CRASH_ANIMATION[CRASH_ANIMATION_INDEX]
+            DT_TIMER_FOR_CRASH_ANIMATION = 0
+        end
     end
 
 -----------------------------------------------------------
@@ -876,10 +934,10 @@ function love.draw()
 
     if CURRENT_GAME_STATE == "5-crashed" then
         HUD_TEXT.draw()
-        LANDER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
         CRASHED_TEXT.draw()
+        CRASH_ANIMATION.draw()
     end
 
     if CURRENT_GAME_STATE == "6-out_of_bounds" then
