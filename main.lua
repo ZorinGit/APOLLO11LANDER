@@ -174,10 +174,20 @@ function love.load()
     LEVEL_LOADED_FLAG = false
 
 
+    -- initialize font
+    -- FONT = love.graphics.newFont("font/DSEG14Classic-Regular.ttf", 10)
+    -- FONT = love.graphics.newFont("font/DSEG14Classic-Bold.ttf", 10)
+    -- FONT = love.graphics.newFont("font/DSEG14Modern-Bold.ttf", 14)
+    TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 14)
+    NUM_FONT = love.graphics.newFont("font/Zerlina.otf", 18)
+
+
+
     -- drawings
     TUTORIAL_TEXT = {
         draw = function ()
             love.graphics.setColor(1, 1, 1)
+            love.graphics.setFont(TXT_FONT)
             love.graphics.print("        A    S    D \n\nTHRUSTER COMMANDS", LANDER.x - 48, LANDER.y + 30)
             love.graphics.print("PRESS SPACE TO START", SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PRESS p TO PAUSE", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
@@ -193,25 +203,49 @@ function love.load()
         end
     }
 
+    HUD_TEXT = {
+        draw = function ()
+            -- displayed variables on the right corner
+            local X_location_txt = SCREEN_X - 108
+            local X_location_sig = SCREEN_X - 55
+            local X_location_num = SCREEN_X - 45
+            local Y_location = SCREEN_Y - 790
+            local line_space = 20
+            love.graphics.setColor(1, 1, 1)
+            -- text
+            love.graphics.setFont(TXT_FONT)
+            love.graphics.print("VERT", X_location_txt, Y_location + (line_space * 0))
+            love.graphics.print("HORI", X_location_txt, Y_location + (line_space * 1))
+            love.graphics.print("FUEL", X_location_txt, Y_location + (line_space * 2))
+            love.graphics.print("SCOR", X_location_txt, Y_location + (line_space * 3))
+            love.graphics.print("LEVL", X_location_txt, Y_location + (line_space * 4))
+            --signs
+            love.graphics.setFont(NUM_FONT)
+            if math.floor(LANDER.y_velocity) >= 1 then
+                love.graphics.print("+", X_location_sig, Y_location + (line_space * 0))
+            elseif math.floor(LANDER.y_velocity) <= -1 then
+                love.graphics.print("-", X_location_sig, Y_location + (line_space * 0))
+            end
+            if math.floor(LANDER.x_velocity) >= 1 then
+                love.graphics.print("+", X_location_sig, Y_location + (line_space * 1))
+            elseif math.floor(LANDER.x_velocity) <= -1 then
+                love.graphics.print("-", X_location_sig, Y_location + (line_space * 1))
+            end
+            -- numbers
+            love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.y_velocity))), X_location_num, Y_location + (line_space * 0))
+            love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.x_velocity))), X_location_num, Y_location + (line_space * 1))
+            love.graphics.print(string.format("%03d", math.floor(LANDER.fuel_s)), X_location_num, Y_location + (line_space * 2))
+            love.graphics.print(string.format("%03d", SCORE ), X_location_num, Y_location + (line_space * 3))
+            love.graphics.print(string.format("%03d", LEVEL_NUMBER), X_location_num, Y_location + (line_space * 4))
+        end
+    }
+
     TRANSITION_CURTAIN_GRAPHIC = {
         draw = function ()
             love.graphics.setColor(0, 0, 0)
             if TRANSITION_CURTAIN.flag == true then
                 love.graphics.rectangle(TRANSITION_CURTAIN.mode, TRANSITION_CURTAIN.x, TRANSITION_CURTAIN.y, TRANSITION_CURTAIN.width, TRANSITION_CURTAIN.height)
             end
-        end
-    }
-
-    HUD_TEXT = {
-        draw = function ()
-            -- displayed variables on the right corner
-            local X_location = SCREEN_X - 90
-            local Y_location = SCREEN_Y - 790
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.print("Yvel: " .. math.floor(LANDER.y_velocity) .. " m/s", X_location, Y_location)
-            love.graphics.print("Xvel: " .. math.floor(LANDER.x_velocity) .. " m/s", X_location, Y_location + 17)
-            love.graphics.print("Fuel: " .. math.floor(LANDER.fuel_s) .. " s", X_location , Y_location + 34)
-            love.graphics.print(CURRENT_LEVEL["name"], X_location, Y_location + 51)
         end
     }
 
@@ -258,6 +292,7 @@ function love.load()
     PAUSED_TEXT = {
         draw = function ()
             love.graphics.setColor(1, 1, 1)
+            love.graphics.setFont(TXT_FONT)
             love.graphics.print("PRESS p TO UNPAUSE", SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PRESS r TO RESTART", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
         end
@@ -266,6 +301,7 @@ function love.load()
     LANDED_TEXT = {
         draw = function ()
             love.graphics.setColor(1, 1, 1)
+            love.graphics.setFont(TXT_FONT)
             love.graphics.print("THE EAGLE HAS LANDED!", SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PRESS r TO RESTART THIS LEVEL", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
             love.graphics.print("PRESS c TO CONTINUE", SCREEN_X / 2, (SCREEN_Y / 2) + 40)
@@ -275,6 +311,7 @@ function love.load()
     CRASHED_TEXT = {
         draw = function ()
             love.graphics.setColor(1, 1, 1)
+            love.graphics.setFont(TXT_FONT)
             love.graphics.print("LANDER HAS CRASHED!", SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PRESS r TO RESTART THIS LEVEL", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
         end
@@ -283,6 +320,7 @@ function love.load()
     OUT_OF_BOUNDS_TEXT = {
         draw = function ()
             love.graphics.setColor(1, 1, 1)
+            love.graphics.setFont(TXT_FONT)
             love.graphics.print("OUT OF BOUNDS! LANDER IS LOST FOREVER IN SPACE!", SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PRESS r TO RESTART THIS LEVEL", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
         end
@@ -291,6 +329,7 @@ function love.load()
     SCORE_SCREEN_TEXT = {
         draw = function (SCORE)
             love.graphics.setColor(1, 1, 1)
+            love.graphics.setFont(TXT_FONT)
             love.graphics.print("CONGRATULATIONS! YOUR FINAL SCORE IS: " .. math.floor(SCORE), SCREEN_X / 2, SCREEN_Y / 2)
             love.graphics.print("PLEASE PRESS x TO EXIT GAME!", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
             -- TO DO add music credits and dedication to apollo11
@@ -299,6 +338,7 @@ function love.load()
 
     LOADED_SCREEN_TEXT = {
         draw = function ()
+            love.graphics.setFont(TXT_FONT)
             love.graphics.print("PRESS SPACE TO START", SCREEN_X / 2, SCREEN_Y / 2)
         end
     }
