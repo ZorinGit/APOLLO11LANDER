@@ -118,9 +118,7 @@ function love.load()
         lander_x_velocity = 0,
         lander_y = 50,
         lander_y_velocity = 0,
-        -- lander_fuel_s = 99,
-        -- testing
-        lander_fuel_s = 35,
+        lander_fuel_s = 99,
         surface_line_points = {0, 750, 1280, 750},
         landing_surface_line_points = {300, 748, 350, 748}
     }
