@@ -117,7 +117,7 @@ function love.load()
         lander_x_velocity = 0,
         lander_y = 50,
         lander_y_velocity = 0,
-        lander_fuel_s = 100,
+        lander_fuel_s = 99,
         surface_line_points = {0, 750, 1280, 750},
         landing_surface_line_points = {300, 748, 350, 748}
     }
@@ -140,7 +140,7 @@ function love.load()
         lander_y = 350,
         lander_y_velocity = 3,
         lander_fuel_s = 85,
-        surface_line_points = {0, 750, 500, 750, 550, 300, 920, 300, 970, 750, 1280, 750},
+        surface_line_points = {0, 750, 400, 750, 450, 300, 920, 300, 970, 750, 1280, 750},
         landing_surface_line_points = {1100, 748, 1145, 748}
     }
 
@@ -180,26 +180,33 @@ function love.load()
     -- FONT = love.graphics.newFont("font/DSEG14Modern-Bold.ttf", 14)
     TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 14)
     NUM_FONT = love.graphics.newFont("font/Zerlina.otf", 18)
-
-
+    X_MENU_TEXT_LOCATION = (SCREEN_X / 2) - 120
+    Y_MENU_TEXT_LOCATION = (SCREEN_Y / 2) - 60
+    MENU_TEXT_LINE_SPACER = 20
 
     -- drawings
     TUTORIAL_TEXT = {
         draw = function ()
-            love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("        A    S    D \n\nTHRUSTER COMMANDS", LANDER.x - 48, LANDER.y + 30)
-            love.graphics.print("PRESS SPACE TO START", SCREEN_X / 2, SCREEN_Y / 2)
-            love.graphics.print("PRESS p TO PAUSE", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
-            love.graphics.print("PRESS r TO RESTART ANY TIME", SCREEN_X / 2, (SCREEN_Y / 2) + 40)
-            local X_location = SCREEN_X - 90
+            love.graphics.setColor(1, 0, 0)
+            love.graphics.print("A", LANDER.x - 25, LANDER.y + 5)
+            love.graphics.print("D", LANDER.x + 40, LANDER.y + 5)
+            love.graphics.print("S", LANDER.x + 8, LANDER.y + 35)
+            love.graphics.print("THRUSTER COMMAND KEYS", LANDER.x - 90, LANDER.y + 70)
+            local X_location = SCREEN_X - 260
             local Y_location = SCREEN_Y - 790
-            love.graphics.print("VELOCITIES ->", X_location - 180, Y_location)
-            love.graphics.print("MUST BE UNDER 5 m/s FOR SAFE LANDING", X_location - 270, Y_location + 15)
-            love.graphics.print("THRUSTERS WILL NOT FIRE IF FUEL ->\n                   RUNS OUT", X_location - 260, Y_location + 34)
-            love.graphics.print("IF LANDER EXITS THE SCREEN IT WILL BECOME LOST IN SPACE ->", X_location - 320, Y_location + 150)
-            love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 25, LANDING_SURFACE_LINE_POINTS[2] - 20)
+            love.graphics.print("VELOCITIES IN", X_location, Y_location)
+            love.graphics.print("METERS PER SECOND", X_location - 31, Y_location + 18)
+            love.graphics.print("FUEL IN SECONDS", X_location - 10, Y_location + 42)
+            love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 30, LANDING_SURFACE_LINE_POINTS[2] - 30)
+            love.graphics.print("VELOCITIES MUST BE UNDER 5 METERS PER SECOND FOR SAFE LANDING - LEFTOVER FUEL WILL BE ADDED TO YOUR SCORE - THERE ARE 5 LEVELS", LANDING_SURFACE_LINE_POINTS[1] - 230, LANDING_SURFACE_LINE_POINTS[2] + 20)
             -- TO DO make tutorial text nicer, add score/fuel explanation, add up and down arrows control sound
+            love.graphics.print("PLEASE READ RED TUTORIAL TEXT", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.print("PRESS P TO PAUSE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+            love.graphics.print("PRESS R TO RESTART ANY TIME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*2)
+            love.graphics.print("UP AND DOWN ARROWS CONTROL SOUND VOLUME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*3)
+            love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*4)
         end
     }
 
@@ -293,8 +300,8 @@ function love.load()
         draw = function ()
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("PRESS p TO UNPAUSE", SCREEN_X / 2, SCREEN_Y / 2)
-            love.graphics.print("PRESS r TO RESTART", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+            love.graphics.print("PRESS P TO UNPAUSE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("PRESS R TO RESTART LEVEL", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
         end
     }
 
@@ -302,9 +309,8 @@ function love.load()
         draw = function ()
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("THE EAGLE HAS LANDED!", SCREEN_X / 2, SCREEN_Y / 2)
-            love.graphics.print("PRESS r TO RESTART THIS LEVEL", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
-            love.graphics.print("PRESS c TO CONTINUE", SCREEN_X / 2, (SCREEN_Y / 2) + 40)
+            love.graphics.print("THE EAGLE HAS LANDED", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("PRESS C TO CONTINUE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
         end
     }
 
@@ -312,8 +318,8 @@ function love.load()
         draw = function ()
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("LANDER HAS CRASHED!", SCREEN_X / 2, SCREEN_Y / 2)
-            love.graphics.print("PRESS r TO RESTART THIS LEVEL", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+            love.graphics.print("LANDER HAS CRASHED", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("PRESS R TO RESTART", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
         end
     }
 
@@ -321,8 +327,8 @@ function love.load()
         draw = function ()
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("OUT OF BOUNDS! LANDER IS LOST FOREVER IN SPACE!", SCREEN_X / 2, SCREEN_Y / 2)
-            love.graphics.print("PRESS r TO RESTART THIS LEVEL", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+            love.graphics.print("OUT OF BOUNDS! LANDER IS LOST FOREVER IN SPACE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("PRESS R TO RESTART", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
         end
     }
 
@@ -330,8 +336,8 @@ function love.load()
         draw = function (SCORE)
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("CONGRATULATIONS! YOUR FINAL SCORE IS: " .. math.floor(SCORE), SCREEN_X / 2, SCREEN_Y / 2)
-            love.graphics.print("PLEASE PRESS x TO EXIT GAME!", SCREEN_X / 2, (SCREEN_Y / 2) + 20)
+            love.graphics.print("CONGRATULATIONS YOUR FINAL SCORE IS " .. math.floor(SCORE), X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("PLEASE PRESS X TO EXIT GAME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
             -- TO DO add music credits and dedication to apollo11
         end
     }
@@ -339,7 +345,7 @@ function love.load()
     LOADED_SCREEN_TEXT = {
         draw = function ()
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("PRESS SPACE TO START", SCREEN_X / 2, SCREEN_Y / 2)
+            love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
         end
     }
 
@@ -353,7 +359,7 @@ function love.load()
 
     -- SOUNDS
     SOUND_LEVELS = {0, 0.25, 0.5, 1, 2, 4, 8, 16}
-    SOUND_LEVEL_INDEX = 4
+    SOUND_LEVEL_INDEX = 5
     MASTER_VOLUME_MODIFIER = SOUND_LEVELS[SOUND_LEVEL_INDEX]
     CHATTER_SOUND = love.audio.newSource("sounds/chatter.mp3", "stream")
     CHATTER_SOUND_BASE_VOL = 0.03
@@ -390,11 +396,11 @@ function love.load()
     THRUSTER_LIGHT_RIGHT_SOUND:setLooping(true)
     THRUSTER_LIGHT_RIGHT_SOUND:setPosition(4, 10, 0)
     THUD_BIG_SOUND = love.audio.newSource("sounds/thud_big.wav", "static")
-    THUD_BIG_SOUND_BASE_VOL = 0.7
+    THUD_BIG_SOUND_BASE_VOL = 0.85
     THUD_BIG_SOUND:setVolume(THUD_BIG_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     THUD_BIG_SOUND:setLooping(false)
     THUD_SMALL_SOUND = love.audio.newSource("sounds/thud_small.mp3", "static")
-    THUD_SMALL_SOUND_BASE_VOL = 0.35
+    THUD_SMALL_SOUND_BASE_VOL = 0.45
     THUD_SMALL_SOUND:setVolume(THUD_SMALL_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     THUD_SMALL_SOUND:setLooping(false)
     -- TO DO add victory music add more music
