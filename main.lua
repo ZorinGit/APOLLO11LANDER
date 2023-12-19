@@ -102,6 +102,7 @@ function love.load()
     -- dt timers
     DT_TIMER_FOR_SOUND_CONTROL = 0
     DT_TIMER_FOR_CRASH_ANIMATION = 0
+    DT_TIMER_FOR_FUEL_LOW_ALERT = 0
 
 
     -- game manager setting up game states
@@ -117,7 +118,9 @@ function love.load()
         lander_x_velocity = 0,
         lander_y = 50,
         lander_y_velocity = 0,
-        lander_fuel_s = 99,
+        -- lander_fuel_s = 99,
+        -- testing
+        lander_fuel_s = 35,
         surface_line_points = {0, 750, 1280, 750},
         landing_surface_line_points = {300, 748, 350, 748}
     }
@@ -344,6 +347,7 @@ function love.load()
 
     LOADED_SCREEN_TEXT = {
         draw = function ()
+            love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
             love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
         end
@@ -353,6 +357,29 @@ function love.load()
         draw = function ()
             love.graphics.draw(CURRENT_LANDER_CRASH_FRAME, LANDER.x, LANDER.y)
             love.graphics.draw(CURRENT_DUST_CRASH_FRAME, LANDER.x, LANDER.y)
+        end
+    }
+
+    FUEL_LOW_ALERT_FLAG = false
+    FUEL_LOW_FLASH_FLAG = true
+    FUEL_LOW_ALERT_TEXT = {
+        draw = function ()
+            if FUEL_LOW_ALERT_FLAG == true and FUEL_LOW_FLASH_FLAG == true then
+            -- red alert text
+            love.graphics.setColor(1, 0, 0)
+            love.graphics.setFont(TXT_FONT)
+            love.graphics.print("FUEL LOW", X_MENU_TEXT_LOCATION + 60, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("PRESS SPACE TO DISABLE", X_MENU_TEXT_LOCATION, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*1)
+
+            -- red fuel gauge
+            local X_location_txt = SCREEN_X - 108
+            local X_location_num = SCREEN_X - 45
+            local Y_location = SCREEN_Y - 790
+            local line_space = 20
+            love.graphics.print("FUEL", X_location_txt, Y_location + (line_space * 2))
+            love.graphics.setFont(NUM_FONT)
+            love.graphics.print(string.format("%03d", math.floor(LANDER.fuel_s)), X_location_num, Y_location + (line_space * 2))
+            end
         end
     }
 
@@ -403,6 +430,10 @@ function love.load()
     THUD_SMALL_SOUND_BASE_VOL = 0.45
     THUD_SMALL_SOUND:setVolume(THUD_SMALL_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     THUD_SMALL_SOUND:setLooping(false)
+    FUEL_ALERT_SOUND = love.audio.newSource("sounds/fuel_low.mp3", "static")
+    FUEL_ALERT_SOUND_BASE_VOL = 0.011
+    FUEL_ALERT_SOUND:setVolume(FUEL_ALERT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+    FUEL_ALERT_SOUND:setLooping(true)
     -- TO DO add victory music add more music
 
     -- helper function to play big or small thud depending on speed during crash
@@ -459,6 +490,10 @@ function love.update(dt)
 
         -- reset crash animation
         CRASH_ANIMATION_INDEX = 1
+
+        -- reset fuel alarm flags
+        FUEL_LOW_ALERT_FLAG = false
+        FUEL_LOW_FLASH_FLAG = true
 
         -- -- load line collision pixels for this level
 
@@ -528,6 +563,7 @@ function love.update(dt)
         THRUSTER_HEAVY_SOUND:setVolume(THRUSTER_HEAVY_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
         THRUSTER_LIGHT_LEFT_SOUND:setVolume(THRUSTER_LIGHT_LEFT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
         THRUSTER_LIGHT_RIGHT_SOUND:setVolume(THRUSTER_LIGHT_RIGHT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+        FUEL_ALERT_SOUND:setVolume(FUEL_ALERT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
 
 
 
@@ -748,6 +784,26 @@ function love.update(dt)
         end
 
 
+        -- control for flashing alert
+        if math.floor(LANDER.fuel_s) == 30 then
+            FUEL_LOW_ALERT_FLAG = true
+            LANDER.fuel_s = LANDER.fuel_s - 1
+            FUEL_ALERT_SOUND:play()
+        end
+
+        if FUEL_LOW_ALERT_FLAG == true then
+            DT_TIMER_FOR_FUEL_LOW_ALERT = DT_TIMER_FOR_FUEL_LOW_ALERT + dt
+        end
+
+        if FUEL_LOW_ALERT_FLAG == true and DT_TIMER_FOR_FUEL_LOW_ALERT > 0.4 then
+            FUEL_LOW_FLASH_FLAG = true
+        end
+
+        if FUEL_LOW_ALERT_FLAG == true and DT_TIMER_FOR_FUEL_LOW_ALERT > 0.8 then
+            FUEL_LOW_FLASH_FLAG = false
+            DT_TIMER_FOR_FUEL_LOW_ALERT = 0
+        end
+
 
         function love.keypressed(key)
             -- pause game
@@ -760,6 +816,11 @@ function love.update(dt)
             if key == 'r' then
                 CURRENT_GAME_STATE = GAME_MANAGER[8]
                 LEVEL_LOADED_FLAG = false
+            end
+            -- press space for disabling fuel alerts
+            if key == 'space' then
+                FUEL_LOW_ALERT_FLAG = false
+                FUEL_ALERT_SOUND:stop()
             end
         end
     end
@@ -929,6 +990,7 @@ function love.update(dt)
     -- turn off thruster sounds if not during 2-game_play state
     if CURRENT_GAME_STATE ~= "2-game_play" then
         INTERACT_THRUSTER_SOUND_EFFECTS("stop")
+        FUEL_ALERT_SOUND:stop()
     end
 
 
@@ -960,6 +1022,7 @@ function love.draw()
         THRUSTER_GRAPHIC.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
+        FUEL_LOW_ALERT_TEXT.draw()
     end
 
     if CURRENT_GAME_STATE == "3-paused" then
