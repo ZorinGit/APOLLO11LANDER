@@ -4,7 +4,7 @@ function love.load()
     -- set resolution
     SCREEN_X = 1280
     SCREEN_Y = 800
-    love.window.setMode(SCREEN_X, SCREEN_Y, {vsync=1})
+    love.window.setMode(SCREEN_X, SCREEN_Y)
 
 
     -- set lunar properties
@@ -118,7 +118,9 @@ function love.load()
         lander_x_velocity = 0,
         lander_y = 50,
         lander_y_velocity = 0,
-        lander_fuel_s = 99,
+        -- lander_fuel_s = 99,
+        -- testing
+        lander_fuel_s = 13,
         surface_line_points = {0, 750, 1280, 750},
         landing_surface_line_points = {300, 748, 350, 748}
     }
@@ -176,9 +178,6 @@ function love.load()
 
 
     -- initialize font
-    -- FONT = love.graphics.newFont("font/DSEG14Classic-Regular.ttf", 10)
-    -- FONT = love.graphics.newFont("font/DSEG14Classic-Bold.ttf", 10)
-    -- FONT = love.graphics.newFont("font/DSEG14Modern-Bold.ttf", 14)
     TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 14)
     NUM_FONT = love.graphics.newFont("font/Zerlina.otf", 18)
     X_MENU_TEXT_LOCATION = (SCREEN_X / 2) - 120
@@ -366,8 +365,13 @@ function love.load()
             -- red alert text
             love.graphics.setColor(1, 0, 0)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("FUEL LOW", X_MENU_TEXT_LOCATION + 60, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*0)
-            love.graphics.print("PRESS SPACE TO DISABLE", X_MENU_TEXT_LOCATION, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*1)
+            if FUEL_LOW_ALERT_FLAG == true then
+                love.graphics.print("FUEL LOW", X_MENU_TEXT_LOCATION + 60, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*0)
+            end
+            if FUEL_CRITICAL_ALERT_FLAG == true then
+                love.graphics.print("FUEL CRITICAL", X_MENU_TEXT_LOCATION + 45, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*0)          
+            end
+            love.graphics.print("PRESS ENTER TO DISABLE", X_MENU_TEXT_LOCATION, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*1)
 
             -- red fuel gauge
             local X_location_txt = SCREEN_X - 108
@@ -383,7 +387,7 @@ function love.load()
 
 
     -- SOUNDS
-    SOUND_LEVELS = {0, 0.25, 0.5, 1, 2, 4, 8, 16}
+    SOUND_LEVELS = {0, 0.5, 1, 2, 4, 8, 16, 32}
     SOUND_LEVEL_INDEX = 5
     MASTER_VOLUME_MODIFIER = SOUND_LEVELS[SOUND_LEVEL_INDEX]
     CHATTER_SOUND = love.audio.newSource("sounds/chatter.mp3", "stream")
@@ -794,7 +798,7 @@ function love.update(dt)
             FUEL_LOW_ALERT_SOUND:play()
         end
 
-        if math.floor(LANDER.fuel_s) == 11 then
+        if math.floor(LANDER.fuel_s) == 11 and FUEL_LOW_ALERT_FLAG == false then
             FUEL_CRITICAL_ALERT_FLAG = true
             LANDER.fuel_s = LANDER.fuel_s - 1
             FUEL_CRITICAL_ALERT_SOUND:play()
@@ -827,7 +831,7 @@ function love.update(dt)
                 LEVEL_LOADED_FLAG = false
             end
             -- press space for disabling fuel alerts
-            if key == 'space' then
+            if key == 'return' then
                 FUEL_LOW_ALERT_FLAG = false
                 FUEL_LOW_ALERT_SOUND:stop()
                 FUEL_CRITICAL_ALERT_FLAG = false
