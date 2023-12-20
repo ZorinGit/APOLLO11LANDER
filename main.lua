@@ -425,7 +425,7 @@ function love.load()
     THRUSTER_LIGHT_RIGHT_SOUND:setLooping(true)
     THRUSTER_LIGHT_RIGHT_SOUND:setPosition(4, 10, 0)
     THUD_BIG_SOUND = love.audio.newSource("sounds/thud_big.wav", "static")
-    THUD_BIG_SOUND_BASE_VOL = 0.85
+    THUD_BIG_SOUND_BASE_VOL = 0.9
     THUD_BIG_SOUND:setVolume(THUD_BIG_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     THUD_BIG_SOUND:setLooping(false)
     THUD_SMALL_SOUND = love.audio.newSource("sounds/thud_small.mp3", "static")
@@ -575,25 +575,27 @@ function love.update(dt)
 
 
         -- x axis trusters and acceleration left or right
-        LANDER.x_thruster_left = false
-        LANDER.x_thruster_right = false
-        if love.keyboard.isDown("a") and LANDER.fuel_s > 0 then
+        if love.keyboard.isDown("a") and LANDER.fuel_s > 0.1 then
             LANDER.x_thruster_left = true
             -- fuel consumption
             LANDER.fuel_s = LANDER.fuel_s - 1 * dt * (LANDER.x_thruster_force_N/math.abs(LANDER.y_only_thruster_force_N))
+        else
+            LANDER.x_thruster_left = false
         end
 
-        if love.keyboard.isDown("d") and LANDER.fuel_s > 0 then
+        if love.keyboard.isDown("d") and LANDER.fuel_s > 0.1 then
             LANDER.x_thruster_right = true
             -- fuel consumption
             LANDER.fuel_s = LANDER.fuel_s - 1 * dt * (LANDER.x_thruster_force_N/math.abs(LANDER.y_only_thruster_force_N))
+        else
+            LANDER.x_thruster_right = false
         end
 
-        if LANDER.x_thruster_left == true and LANDER.fuel_s > 1 then
+        if LANDER.x_thruster_left == true and LANDER.fuel_s > 0.1 then
             LANDER.x_velocity = LANDER.x_velocity + LANDER.x_thruster_acceleration * dt
         end
 
-        if LANDER.x_thruster_right == true and LANDER.fuel_s > 1 then
+        if LANDER.x_thruster_right == true and LANDER.fuel_s > 0.1 then
             LANDER.x_velocity = LANDER.x_velocity - LANDER.x_thruster_acceleration * dt
         end
 
@@ -629,11 +631,12 @@ function love.update(dt)
 
 
         -- y axis trusters and acceleration
-        LANDER.y_thruster = false
-        if love.keyboard.isDown("s") and LANDER.fuel_s > 1 then
+        if love.keyboard.isDown("s") and LANDER.fuel_s > 0.1 then
             LANDER.y_thruster = true
             -- fuel consumption
             LANDER.fuel_s = LANDER.fuel_s - 1 * dt
+        else
+            LANDER.y_thruster = false
         end
 
         if LANDER.y_thruster == false then
