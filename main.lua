@@ -75,14 +75,14 @@ function love.load()
     TRANSITION_CURTAIN.height = SCREEN_Y
     TRANSITION_CURTAIN.flag = true
 
-    -- initialize lander collision pixels surface line points and line collision pixels and landing zone surface and score
+    -- initialize lander collision pixels surface line points and landing zone surface and score
     LANDER_COLLISION_PIXELS = {}
     SURFACE_LINE_POINTS = {}
-    -- LINE_COLLISION_PIXELS = {}
     LANDING_SURFACE_LINE_POINTS = {}
     SCORE = 0
 
-
+    -- OLD COLLISION SYSTEM SAVED FOR POSTERITY
+    -- LINE_COLLISION_PIXELS = {}
     -- counter to reduce the frequency of collision checks
     -- COLLISION_FREQUENCY_COUNTER = 0
 
@@ -118,9 +118,7 @@ function love.load()
         lander_x_velocity = 0,
         lander_y = 50,
         lander_y_velocity = 0,
-        -- lander_fuel_s = 99,
-        -- testing
-        lander_fuel_s = 13,
+        lander_fuel_s = 99,
         surface_line_points = {0, 750, 1280, 750},
         landing_surface_line_points = {300, 748, 350, 748}
     }
@@ -177,7 +175,7 @@ function love.load()
     LEVEL_LOADED_FLAG = false
 
 
-    -- initialize font
+    -- initialize font and screen locations for text
     TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 14)
     NUM_FONT = love.graphics.newFont("font/Zerlina.otf", 18)
     X_MENU_TEXT_LOCATION = (SCREEN_X / 2) - 120
@@ -501,10 +499,9 @@ function love.update(dt)
         FUEL_LOW_ALERT_FLAG = false
         FUEL_FLASH_FLAG = true
 
+        -- OLD COLLISION SYSTEM SAVED FOR POSTERITY
         -- -- load line collision pixels for this level
-
         -- LINE_COLLISION_PIXELS = {}
-
         -- -- populating table for all collision pixels in the surface line based on the SURFACE_LINE_POINTS
         -- -- NOTE WILL NOT HANDLE VERTICAL LINES - divide by 0
         -- for i = 1, #SURFACE_LINE_POINTS - 2 , 2 do
@@ -704,6 +701,7 @@ function love.update(dt)
         end
 
 
+        -- OLD COLLISION SYSTEM SAVED FOR POSTERITY
         -- -- crash check
         -- -- collision with surface check and counter used to reduce the check frequency to 50 times a second for a smoother game
         -- -- COLLISION_FREQUENCY_COUNTER = COLLISION_FREQUENCY_COUNTER + dt
@@ -726,7 +724,6 @@ function love.update(dt)
 
 
         -- COLLISION CHECK BASED ON LINE SEGMENT INTERSECTION OR COINCIDENCE
-
         for i = 1, #SURFACE_LINE_POINTS - 2 , 2 do
 
             -- declare C.x C.y D.x D.y for line intersection algorithm line CD
