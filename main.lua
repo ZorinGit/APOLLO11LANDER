@@ -49,6 +49,7 @@ function love.load()
     LANDER.y_total_thruster_and_lunar_force_N = LANDER.y_only_lunar_force_N + LANDER.y_only_thruster_force_N
     LANDER.y_total_thruster_and_lunar_acceleration = tonumber(string.format("%.2f", (LANDER.y_total_thruster_and_lunar_force_N / LANDER.mass_kg)))
 
+
     -- crash animations
     CRASH_ANIMATION_INDEX = 1
     DUST_CRASH_ANIMATION = {}
@@ -75,6 +76,18 @@ function love.load()
     TRANSITION_CURTAIN.height = SCREEN_Y
     TRANSITION_CURTAIN.flag = true
 
+
+    -- splash and score screens
+    SPLASH_SCREEN = {}
+    SPLASH_SCREEN.pic = love.graphics.newImage('sprites/screen_pics/splash_screen.png')
+    SPLASH_SCREEN.x = 0
+    SPLASH_SCREEN.y = 0
+    SCORE_SCREEN = {}
+    SCORE_SCREEN.pic = love.graphics.newImage('sprites/screen_pics/score_screen2.png')
+    SCORE_SCREEN.x = 0
+    SCORE_SCREEN.y = 0
+
+
     -- initialize lander collision pixels surface line points and landing zone surface and score
     LANDER_COLLISION_PIXELS = {}
     SURFACE_LINE_POINTS = {}
@@ -96,18 +109,17 @@ function love.load()
     VELOCITY_MAGNITUDE = 0
 
 
-    -- start timer NOT USED
-    START_TIME = love.timer.getTime()
-
-    -- dt timers
+    -- DT TIMERS!
+    DT_TIMER_FOR_SPLASH_SCREEN = 0
     DT_TIMER_FOR_SOUND_CONTROL = 0
-    DT_TIMER_FOR_CRASH_ANIMATION = 0
     DT_TIMER_FOR_FUEL_ALERT = 0
+    DT_TIMER_FOR_CRASH_ANIMATION = 0
+    DT_TIMER_FOR_SCORE_SCREEN = 0
 
 
     -- game manager setting up game states
-    GAME_MANAGER = {"1-tutorial", "2-game_play", "3-paused", "4-landed", "5-crashed", "6-out_of_bounds", "7-score_screen", "8-loaded"}
-    CURRENT_GAME_STATE = GAME_MANAGER[1]
+    GAME_MANAGER = {"1-tutorial", "2-game_play", "3-paused", "4-landed", "5-crashed", "6-out_of_bounds", "7-score_screen", "8-loaded", "9-splash_screen"}
+    CURRENT_GAME_STATE = GAME_MANAGER[9]
 
 
     -- levels - NAME - LANDER.x - LANDER.x_velocity - LANDER.y - LANDER.y_velocity - LANDER.fuel_s - SURFACE_LINE_POINTS - LANDING_SURFACE_LINE_POINTS
@@ -175,8 +187,10 @@ function love.load()
     LEVEL_LOADED_FLAG = false
 
 
-    -- initialize font and screen locations for text
+    -- initialize font and screen locations for text for drawings
     TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 14)
+    MED_TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 22)
+    BIG_TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 36)
     NUM_FONT = love.graphics.newFont("font/Zerlina.otf", 18)
     X_MENU_TEXT_LOCATION = (SCREEN_X / 2) - 120
     Y_MENU_TEXT_LOCATION = (SCREEN_Y / 2) - 60
@@ -329,13 +343,74 @@ function love.load()
         end
     }
 
+    SCORE_SCREEN_BACKGROUND = {
+        draw = function ()
+            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.draw(SCORE_SCREEN.pic, SCORE_SCREEN.x, SCORE_SCREEN.y)
+        end
+    }
+
+    -- tables for fade in credits
+    CREDITS_TEXT_TABLE = {
+        "CREDITS",
+        "DESIGN ZORIN",
+        "PROGRAMMING ZORIN",
+        "PIXEL ART ZORIN",
+        "PICTURES NASA",
+        "RETOUCHED BY LEONARDO AI",
+        "MUSIC KEVIN MACLEOD",
+        "EQUATORIAL COMPLEX",
+        "FROZEN STAR",
+        "WIZARDTORIUM",
+        "FANFARE FOR SPACE",
+        "CHATTER NASA MISSIONS",
+        "APOLLO 11 AND 13",
+        "OTHER SOUNDS",
+        "NEWLOCKNEW FREESOUND",
+        "LINK-BOY FREESOUND",
+        "ZE RUBENATOR YOUTUBE",
+        "PLAYED N FAVED YOUTUBE",
+        "DSKY FONTS",
+        "EHDORRII GITHUB",
+        " ",
+        " ",
+        " ",
+        "PRESS X TO EXIT GAME"
+    }
+
+    CREDITS_TEXT_OPACITY = {}
+
+    for i = 1, #CREDITS_TEXT_TABLE do
+        CREDITS_TEXT_OPACITY[i] = 0
+    end
+    INDEX_FOR_CREDITS_TEXT_OPACITY = 1
+
+    local x_center_point = 850
+    CREDITS_X_LOCATION = {}
+    for i = 1, #CREDITS_TEXT_TABLE do
+        CREDITS_X_LOCATION[i] = x_center_point - (love.graphics.getFont():getWidth(CREDITS_TEXT_TABLE[i]) / 2)
+    end
+
+    local y_center_point = 140
+    local y_line_spacer = 26
+    CREDITS_Y_LOCATION = {}
+    for i = 1, #CREDITS_TEXT_TABLE do
+        CREDITS_Y_LOCATION[i] = y_center_point + (y_line_spacer * i)
+    end
+
     SCORE_SCREEN_TEXT = {
         draw = function (SCORE)
             love.graphics.setColor(1, 1, 1)
-            love.graphics.setFont(TXT_FONT)
-            love.graphics.print("CONGRATULATIONS YOUR FINAL SCORE IS " .. math.floor(SCORE), X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
-            love.graphics.print("PLEASE PRESS X TO EXIT GAME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
-            -- TO DO add music credits and dedication to apollo11
+            love.graphics.setFont(MED_TXT_FONT)
+            local line_1 = "CONGRATULATIONS YOUR FINAL SCORE IS " .. math.floor(SCORE)
+            love.graphics.print(line_1, x_center_point - (love.graphics.getFont():getWidth(line_1) / 2), y_center_point - (y_line_spacer * 3))
+
+            -- credits
+            for i = 1, #CREDITS_TEXT_TABLE do
+                love.graphics.setFont(TXT_FONT)
+                love.graphics.setColor(1, 1, 1, CREDITS_TEXT_OPACITY[i])
+                love.graphics.print(CREDITS_TEXT_TABLE[i], CREDITS_X_LOCATION[i], CREDITS_Y_LOCATION[i])
+            end
         end
     }
 
@@ -353,6 +428,49 @@ function love.load()
             love.graphics.draw(CURRENT_DUST_CRASH_FRAME, LANDER.x, LANDER.y)
         end
     }
+
+    SPLASH_SCREEN_BACKGROUND_OPACITY = 0
+    SPLASH_SCREEN_BACKGROUND = {
+        draw = function ()
+            love.graphics.setColor(1, 1, 1, SPLASH_SCREEN_BACKGROUND_OPACITY)
+            love.graphics.draw(SPLASH_SCREEN.pic, SPLASH_SCREEN.x, SPLASH_SCREEN.y)
+        end
+    }
+
+    -- tables for fade in title
+    TITLE_TEXT_TABLE = {"A", " ", "P", " ", "O", " ", "L", " ", "L", " ", "O", " ", " ", " ", "1", " ", "1", " ", " ", " ", "L", " ", "A", " ", "N", " ", "D", " ", "E", " ", "R"}
+    TITLE_TEXT_OPACITY = {}
+
+    for i = 1, #TITLE_TEXT_TABLE do
+        TITLE_TEXT_OPACITY[i] = 0
+    end
+    INDEX_FOR_OPACITY_TABLE = 1
+
+    TITLE_X_LOCATIONS = {}
+    local title_x_start_location = 340
+    for i = 1, #TITLE_TEXT_TABLE do
+        TITLE_X_LOCATIONS[i] = title_x_start_location
+        title_x_start_location = title_x_start_location + 20
+    end
+
+    TITLE_Y_LOCATION = 25
+
+    --text opacity for splash screen
+    SPLASH_SCREEN_TEXT_OPACITY = 0
+
+    SPLASH_SCREEN_FADE_IN_TITLE = {
+        draw = function ()
+            love.graphics.setFont(BIG_TXT_FONT)
+            for i = 1, #TITLE_TEXT_TABLE do
+                love.graphics.setColor(1, 1, 1, TITLE_TEXT_OPACITY[i])
+                love.graphics.print(TITLE_TEXT_TABLE[i], TITLE_X_LOCATIONS[i], TITLE_Y_LOCATION)
+            end
+            love.graphics.setFont(TXT_FONT)
+            love.graphics.setColor(1, 1, 1, SPLASH_SCREEN_TEXT_OPACITY)
+            love.graphics.print("PRESS SPACE TO CONTINUE", 530, 100)
+        end
+    }
+
 
     FUEL_LOW_ALERT_FLAG = false
     FUEL_CRITICAL_ALERT_FLAG = false
@@ -405,7 +523,7 @@ function love.load()
     LAND_SUCCESS_SOUND:setVolume(LAND_SUCCESS_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     LAND_SUCCESS_SOUND:setLooping(false)
     VICTORY_SMALL_STEP_SOUND = love.audio.newSource("sounds/victory_small_step.mp3", "static")
-    VICTORY_SMALL_STEP_SOUND_BASE_VOL = 0.08
+    VICTORY_SMALL_STEP_SOUND_BASE_VOL = 0.1
     VICTORY_SMALL_STEP_SOUND:setVolume(VICTORY_SMALL_STEP_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     VICTORY_SMALL_STEP_SOUND:setLooping(false)
     THRUSTER_HEAVY_SOUND = love.audio.newSource("sounds/thruster_heavy.mp3", "static")
@@ -438,7 +556,14 @@ function love.load()
     FUEL_CRITICAL_ALERT_SOUND_BASE_VOL = 0.015
     FUEL_CRITICAL_ALERT_SOUND:setVolume(FUEL_CRITICAL_ALERT_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
     FUEL_CRITICAL_ALERT_SOUND:setLooping(true)
-    -- TO DO add victory music add more music
+    SPLASH_SCREEN_MUSIC = love.audio.newSource("sounds/splash_screen_music.mp3", "stream")
+    SPLASH_SCREEN_MUSIC_BASE_VOL = 0.12
+    SPLASH_SCREEN_MUSIC:setVolume(SPLASH_SCREEN_MUSIC_BASE_VOL * MASTER_VOLUME_MODIFIER)
+    SPLASH_SCREEN_MUSIC:setLooping(false)
+    SCORE_SCREEN_MUSIC = love.audio.newSource("sounds/score_screen_music.mp3", "stream")
+    SCORE_SCREEN_MUSIC_BASE_VOL = 0.1
+    SCORE_SCREEN_MUSIC:setVolume(SCORE_SCREEN_MUSIC_BASE_VOL * MASTER_VOLUME_MODIFIER)
+    SCORE_SCREEN_MUSIC:setLooping(false)
 
     -- helper function to play big or small thud depending on speed during crash
     function CHOSE_PLAY_THUD_HELPER()
@@ -528,6 +653,7 @@ function love.update(dt)
 -----------------------------------------------------------
 
     -- SOUND CONTROLS
+    -- dt timer must be used here to so that sound does not change too fast when arrow keys are down
     DT_TIMER_FOR_SOUND_CONTROL = DT_TIMER_FOR_SOUND_CONTROL + dt
     if DT_TIMER_FOR_SOUND_CONTROL > 0.125 then
         if SOUND_LEVEL_INDEX < #SOUND_LEVELS and love.keyboard.isDown('up') then
@@ -544,13 +670,17 @@ function love.update(dt)
 -----------------------------------------------------------
 
     if CURRENT_GAME_STATE == "1-tutorial" then
+        -- sound stuff
+        SPLASH_SCREEN_MUSIC:setVolume((SPLASH_SCREEN_MUSIC_BASE_VOL - 0.065) * MASTER_VOLUME_MODIFIER)
 
-        -- exit 1-tutorial into 2-game_play by pressing "space"
+        -- exit 1-tutorial into 2-game_play by pressing "space" and stop music
         function love.keypressed(key)
             if key == 'space' then
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
+                SPLASH_SCREEN_MUSIC:stop()
             end
         end
+        -- TO DO  fade in red tutorial text then after space and add menu text
     end
 
 -----------------------------------------------------------
@@ -896,9 +1026,11 @@ function love.update(dt)
                     -- exit 4-landed into 8-loaded by pressing "c" to continue to next level
                     CURRENT_GAME_STATE = GAME_MANAGER[8]
                 else
-                    -- play victory small step for man sound and stop chatter
+                    -- stop chatter and music, play small step for man sound and victory music
                     CHATTER_SOUND:stop()
+                    MUSIC_SOUND:stop()
                     VICTORY_SMALL_STEP_SOUND:play()
+                    SCORE_SCREEN_MUSIC:play()
                     -- update score with leftover fuel
                     SCORE = SCORE + LANDER.fuel_s
                     -- exit 4-landed into 7-score_screen by pressing "c" to continue to score_screen
@@ -967,9 +1099,19 @@ function love.update(dt)
 
     if CURRENT_GAME_STATE == "7-score_screen" then
 
+        -- start timer
+        DT_TIMER_FOR_SCORE_SCREEN = DT_TIMER_FOR_SCORE_SCREEN + dt
+
         -- score sounds
-        MUSIC_SOUND:setVolume((MUSIC_SOUND_BASE_VOL - 0.22) * MASTER_VOLUME_MODIFIER)
-        VICTORY_SMALL_STEP_SOUND:setVolume(0.08)
+        SCORE_SCREEN_MUSIC:setVolume(SCORE_SCREEN_MUSIC_BASE_VOL * MASTER_VOLUME_MODIFIER)
+        VICTORY_SMALL_STEP_SOUND:setVolume(VICTORY_SMALL_STEP_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
+
+        -- control the alpha to fade in credits after 3 seconds
+        if CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] < 1  and DT_TIMER_FOR_SCORE_SCREEN > 9 then
+            CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] = CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] + (dt / 1.9)
+        elseif CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] >= 1 and DT_TIMER_FOR_SCORE_SCREEN > 8 and INDEX_FOR_CREDITS_TEXT_OPACITY < #CREDITS_TEXT_TABLE then
+            INDEX_FOR_CREDITS_TEXT_OPACITY = INDEX_FOR_CREDITS_TEXT_OPACITY + 1
+        end
 
         function love.keypressed(key)
             -- exit 7-out_of_bounds quitting the game window with "x"
@@ -977,7 +1119,6 @@ function love.update(dt)
                 love.event.quit()
             end
         end
-        -- TO DO add victory music and or sounds
     end
 
 -----------------------------------------------------------
@@ -1001,6 +1142,44 @@ function love.update(dt)
 
 -----------------------------------------------------------
 
+
+    if CURRENT_GAME_STATE == "9-splash_screen" then
+
+        -- start timer
+        DT_TIMER_FOR_SPLASH_SCREEN = DT_TIMER_FOR_SPLASH_SCREEN + dt
+
+        -- splash screen sounds
+        SPLASH_SCREEN_MUSIC:play()
+        SPLASH_SCREEN_MUSIC:setVolume(SPLASH_SCREEN_MUSIC_BASE_VOL * MASTER_VOLUME_MODIFIER)
+
+        -- control the alpha to fade in the background after 1.6 seconds
+        if SPLASH_SCREEN_BACKGROUND_OPACITY < 1 and DT_TIMER_FOR_SPLASH_SCREEN > 1.6 then
+            SPLASH_SCREEN_BACKGROUND_OPACITY = SPLASH_SCREEN_BACKGROUND_OPACITY + (dt / 4)
+        end
+
+        -- control the alpha to fade in title text after 3 seconds
+        if TITLE_TEXT_OPACITY[INDEX_FOR_OPACITY_TABLE] < 1  and DT_TIMER_FOR_SPLASH_SCREEN > 3 then
+            TITLE_TEXT_OPACITY[INDEX_FOR_OPACITY_TABLE] = TITLE_TEXT_OPACITY[INDEX_FOR_OPACITY_TABLE] + (dt * 6.5)
+        elseif TITLE_TEXT_OPACITY[INDEX_FOR_OPACITY_TABLE] >= 1 and DT_TIMER_FOR_SPLASH_SCREEN > 3 and INDEX_FOR_OPACITY_TABLE < #TITLE_TEXT_TABLE then
+            INDEX_FOR_OPACITY_TABLE = INDEX_FOR_OPACITY_TABLE + 1
+        end
+
+        -- control the alpha to fade in text after 5 seconds
+        if SPLASH_SCREEN_TEXT_OPACITY < 1 and DT_TIMER_FOR_SPLASH_SCREEN > 9.5 then
+            SPLASH_SCREEN_TEXT_OPACITY = SPLASH_SCREEN_TEXT_OPACITY + ( dt / 1.8)
+        end
+
+        -- exit 9-splash_screen into 1-tutorial by pressing "space"
+        function love.keypressed(key)
+            if key == 'space' then
+            CURRENT_GAME_STATE = GAME_MANAGER[1]
+            end
+        end
+    end
+
+
+-----------------------------------------------------------
+
     -- sound stuff
     -- turn off thruster and alarm sounds if not during 2-game_play state
     if CURRENT_GAME_STATE ~= "2-game_play" then
@@ -1008,13 +1187,6 @@ function love.update(dt)
         FUEL_LOW_ALERT_SOUND:stop()
         FUEL_CRITICAL_ALERT_SOUND:stop()
     end
-
-
-    -- run timer - NOT USED
-    ELAPSED_TIME = love.timer.getTime() - START_TIME
-
-    --for testing purposes
-    -- print("FPS: " .. tostring(love.timer.getFPS()))
 
 end
 
@@ -1073,6 +1245,7 @@ function love.draw()
     end
 
     if CURRENT_GAME_STATE == "7-score_screen" then
+        SCORE_SCREEN_BACKGROUND.draw()
         SCORE_SCREEN_TEXT.draw(SCORE)
     end
 
@@ -1083,6 +1256,11 @@ function love.draw()
         LANDING_ZONE_GRAPHIC.draw()
         LOADED_SCREEN_TEXT.draw()
         TRANSITION_CURTAIN_GRAPHIC.draw()
+    end
+
+    if CURRENT_GAME_STATE == "9-splash_screen" then
+        SPLASH_SCREEN_BACKGROUND.draw()
+        SPLASH_SCREEN_FADE_IN_TITLE.draw()
     end
 
 end
