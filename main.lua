@@ -111,10 +111,12 @@ function love.load()
 
     -- DT TIMERS!
     DT_TIMER_FOR_SPLASH_SCREEN = 0
+    DT_TIMER_FOR_TUTORIAL = 0
     DT_TIMER_FOR_SOUND_CONTROL = 0
     DT_TIMER_FOR_FUEL_ALERT = 0
     DT_TIMER_FOR_CRASH_ANIMATION = 0
     DT_TIMER_FOR_SCORE_SCREEN = 0
+
 
 
     -- game manager setting up game states
@@ -197,10 +199,15 @@ function love.load()
     MENU_TEXT_LINE_SPACER = 20
 
     -- drawings
+    --tackers for tutorial
+    SPACE_COUNTER_FOR_TUTORIAL = 0
+    TUTORIAL_MENU_TEXT_FLAG = false
+    TUTORIAL_RED_TEXT_OPACITY = 0
+
     TUTORIAL_TEXT = {
         draw = function ()
             love.graphics.setFont(TXT_FONT)
-            love.graphics.setColor(1, 0, 0)
+            love.graphics.setColor(1, 0, 0, TUTORIAL_RED_TEXT_OPACITY)
             love.graphics.print("A", LANDER.x - 25, LANDER.y + 5)
             love.graphics.print("D", LANDER.x + 40, LANDER.y + 5)
             love.graphics.print("S", LANDER.x + 8, LANDER.y + 35)
@@ -212,12 +219,15 @@ function love.load()
             love.graphics.print("FUEL IN SECONDS", X_location - 10, Y_location + 42)
             love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 30, LANDING_SURFACE_LINE_POINTS[2] - 30)
             love.graphics.print("VELOCITIES MUST BE UNDER 5 METERS PER SECOND FOR SAFE LANDING - LEFTOVER FUEL WILL BE ADDED TO YOUR SCORE - THERE ARE 5 LEVELS", LANDING_SURFACE_LINE_POINTS[1] - 230, LANDING_SURFACE_LINE_POINTS[2] + 20)
-            love.graphics.print("PLEASE READ RED TUTORIAL TEXT", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
-            love.graphics.setColor(1, 1, 1)
-            love.graphics.print("PRESS P TO PAUSE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
-            love.graphics.print("PRESS R TO RESTART ANY TIME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*2)
-            love.graphics.print("UP AND DOWN ARROWS CONTROL SOUND VOLUME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*3)
-            love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*4)
+            love.graphics.print("PLEASE READ RED TUTORIAL TEXT THEN PRESS SPACE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            
+            if TUTORIAL_MENU_TEXT_FLAG == true then
+                love.graphics.setColor(1, 1, 1)
+                love.graphics.print("PRESS P TO PAUSE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+                love.graphics.print("PRESS R TO RESTART ANY TIME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*2)
+                love.graphics.print("UP AND DOWN ARROWS CONTROL SOUND VOLUME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*3)
+                love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*4) 
+            end
         end
     }
 
@@ -672,15 +682,42 @@ function love.update(dt)
     if CURRENT_GAME_STATE == "1-tutorial" then
         -- sound stuff
         SPLASH_SCREEN_MUSIC:setVolume((SPLASH_SCREEN_MUSIC_BASE_VOL - 0.065) * MASTER_VOLUME_MODIFIER)
+        -- start tutorial timer
+        DT_TIMER_FOR_TUTORIAL = DT_TIMER_FOR_TUTORIAL + dt
 
-        -- exit 1-tutorial into 2-game_play by pressing "space" and stop music
+
+
+        -- move transition curtain off the screen
+        if TRANSITION_CURTAIN.x < SCREEN_X then
+            TRANSITION_CURTAIN.x = TRANSITION_CURTAIN.x + dt*1300
+        else
+            TRANSITION_CURTAIN.flag = false
+        end
+
+        -- 
         function love.keypressed(key)
             if key == 'space' then
-                CURRENT_GAME_STATE = GAME_MANAGER[2]
-                SPLASH_SCREEN_MUSIC:stop()
+                SPACE_COUNTER_FOR_TUTORIAL = SPACE_COUNTER_FOR_TUTORIAL + 1
+
             end
         end
-        -- TO DO  fade in red tutorial text then after space and add menu text
+
+        -- fade in tutorial text after 1 second
+        if DT_TIMER_FOR_TUTORIAL > 1 then
+            TUTORIAL_RED_TEXT_OPACITY = TUTORIAL_RED_TEXT_OPACITY + (dt / 2)
+        end
+
+        -- change the flag to display menu text
+        if SPACE_COUNTER_FOR_TUTORIAL == 1 then
+            TUTORIAL_MENU_TEXT_FLAG = true
+        end
+
+        -- exit 1-tutorial into 2-game_play by pressing "space" and stop music
+        if SPACE_COUNTER_FOR_TUTORIAL == 2 then
+            CURRENT_GAME_STATE = GAME_MANAGER[2]
+            SPLASH_SCREEN_MUSIC:stop()
+        end
+
     end
 
 -----------------------------------------------------------
@@ -1202,6 +1239,7 @@ function love.draw()
         LUNAR_SURFACE_GRAPHIC.draw()
         LANDING_ZONE_GRAPHIC.draw()
         TUTORIAL_TEXT.draw()
+        TRANSITION_CURTAIN_GRAPHIC.draw()
     end
 
     if CURRENT_GAME_STATE == "2-game_play" then
