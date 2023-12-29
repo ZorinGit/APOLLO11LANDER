@@ -4,109 +4,123 @@
 
 #### Description:
 
+
 ## Table of Contents
-- [Basic Description](#basic-description)
-- [Files](#files)
-- [Tour of main.lua](#tour-of-mainlua)
-- [What Went Well](#what-went-well)
-- [Improving Code](#improving-code) 
-- [Improving Game](#improving-game)
+- [Introduction](#introduction)
+- [Project Structure](#project-structure)
+- [Code Overview](#code-overview)
+- [Successes and Challenges](#successes-and-challenges)
+- [Code Improvements](#code-improvements) 
+- [Game Improvements](#game-improvements)
 - [Miscellaneous](#miscellaneous)
 - [Credits](#credits)
-- [Future Work](#future-work)
+- [Future Development](#future-development)
 
-## Basic Description
 
-This is a classic minimalistic lunar lander game with an Apollo 11 theme written in lua using the LOVE2D engine. Note this version requires a [Love2D](https://love2d.org/) installation to run.
+## Introduction
 
-## Files 
+Welcome to the Apollo 11 Lunar Lander, a minimalistic game developed in Lua using the LOVE2D engine. This is my final project for CS50. To run the game, ensure you have [Love2D](https://love2d.org/) installed on your system.
 
-All of the code is in `main.lua` while `font`, `sounds` and `sprites` contain the relevant game files. Although I tried to keep `main.lua` well organized, it became unmanageable towards the end with over 1.3k lines of code. I will definitely endeavor to break up the code base for future projects.
 
-## Tour of main.lua
+## Project Structure
 
-This follows the typical structure of a Love2d game:
+The entire codebase resides in the `main.lua` file, accompanied by game assets found in the `font`, `sounds`, and `sprites`. While I aimed to maintain organization within `main.lua`, the complexity grew as the project evolved, resulting in over 1.3k lines of code. Recognizing this, I acknowledge the need to modularize and refactor the codebase for better maintainability in future projects.
 
-### love.load()
 
-Starts by setting the resolution and importing physics data and graphics into tables `LANDER`, `LUNAR` and so on. Several counters and time keepers are also initialized. Afterwards, the game manager is created:
+## Code Overview
 
+The code follows the typical structure of a Love2D game, organized into key sections:
+
+### `love.load()`
+
+The initialization process begins by setting the resolution and populating tables (`LANDER`, `LUNAR`, etc.) with physics data and graphics. Several counters and timekeeping variables are also initialized. A central component, the game manager, is created to control finite states governing actions in `love.update()` and displayed content in `love.draw()`. The game manager, represented by the `GAME_MANAGER` array like table, defines states such as (tutorial, gameplay, paused, etc). Conceptualizing, implementing and managing these states was one of the project's highlights for me.
 ```
 GAME_MANAGER = {"1-tutorial", "2-game_play", "3-paused", "4-landed", "5-crashed", "6-out_of_bounds", "7-score_screen", "8-loaded", "9-splash_screen"} 
 ```
+Next, the game initializes five levels as tables. A section for `love.draw()` sets up fonts, text, art, and basic logic for various display elements. Each element has a `draw()` method, called in specific `love.draw()` game states to render on-screen.
 
-This is the heart of the game and controls the finite states that govern what gets executed in `love.update()` or displayed in `love.draw()`. It was also one of my favorite systems to implement.
+Following the display setup, a section for loading audio media and setting initial volume levels is implemented for sound effects and music.
 
-The 5 levels are loaded next as tables. Following is a section dedicated to `love.draw()`. It sets up fonts, text, art and some basic logic for many of the display elements. Each element has a `draw` method that will be called in different `love.draw()` game states to render on screen.  
+### `love.update(dt)`
 
-This if followed by a sounds section loading in all the audio media and setting some initial volume levels.
+In this section, the code manages the game's logic and dynamics:
 
-### love.update(dt) 
+- The current level is loaded by redefining tables and setting flags.
+- A universal volume control system is implemented, accessible from any game state.
+- Different game states are demarcated using `if/then` statements, each managing specific aspects of the game. For instance, the `2-game_play` state controls soundtracks, lander movement, landing collision, out-of-bounds detection, fuel alerts, pausing, and more.
 
-Here the current level is loaded up by redefining tables and setting flags. The volume control system follows; this can be universally accessed by any game state. Next come all of the game states controlling the different aspects of the game, gated by `if/then` statements checking the current state. 
-
-For example, the biggest `2-game_play` state plays specific sound tracks, outlines how the lander moves, checks for landing collision, out of bounds, fuel alerts, pausing and more.
-
-The most interesting aspect of here was implementing the collision system. Originally collision was checked by "pixel matching" where 2 pixels of the lander were checked across a table of hundreds of pixels making up the entire surface. Unfortunately this was not good enough as the lander routinely passed through the surface at higher speeds. 
-
-A more effective line intersection and coincidence checker was implemented using this formula:
+Am interesting aspect of this section is the collision system. Initially I utilized a "pixel matching" algorithm. However due to the "bullet through paper" problem the lander would often pass through the surface at high speeds. A more robust line intersection and coincidence checker was implemented using the formula:
 
 ```
--- declare numerators and denominator to be used  
+-- Declare numerators and denominator to be used  
 local a_numerator = (D.x - C.x)*(C.y - A.y) - (C.x - A.x)*(D.y - C.y)
 local b_numerator = (B.x - A.x)*(C.y - A.y) - (C.x - A.x)*(B.y - A.y) 
 local denominator = (D.x - C.x)*(B.y - A.y) - (B.x - A.x)*(D.y - C.y)
 ```
 
-This system checks if an imaginary line segment at the bottom of the lander is ever intersected or coincident with any of the line segments making up the surface (usually 4-6 segments). Thanks to this optimization, collision was detected at virtually any speed, except for extremely high speeds that would never naturally occur in the game. The old system is commented out and kept for posterity.
+This optimized system checks if an imaginary line segment at the bottom of the lander intersects or coincides with any line segments making up the lunar surface. The old pixel-matching system remains commented out for posterity.
 
-I also tried to smooth the animation of the lander traveling across the screen using 3 ghost images of different opacities that move ahead of the lander. Not sure if this makes much of a difference.  
+Additional attempts to enhance user experience include the use of ghost images to smooth the animation of the lander's movement across the screen. Three ghost images of varying opacities move ahead of the lander to create a smooth visual effect. Although I am not sure if this very noticeable.
 
-Lately of note is the `love.keypressed` function which is redefined in each section, as the keys and their effects differ based on the context of the current game state. At the very end after all the states are defined, some sounds are turned off if the current state is not `2-game_play`.
+Finally, the love.keypressed function is redefined in each section to accommodate specific key configurations based on the current game state. At the end, sounds are muted if the current state is not 2-game_play.
 
-### love.draw()
+### `love.draw()`
 
-Most of the code here was already written in `love.load()`, so I am just calling the `draw` functions for the appropriate graphical elements in each state.
+This section simply involves calling the `draw` functions for graphical elements previously initialized in `love.load()` and rendering them to the appropriate states.
 
-## What Went Well
 
-I am very happy with how the finite state game manager worked here to organize and structure my code. Especially with so many states, it would have been a nightmare to write conditions checking variables for every single event. 
+## Successes and Challenges
 
-I also really enjoyed optimizing the collision system. Although it took me a long time to understand and derive the formulas above for line segment intersection, I think it was worth it because now I am confident I understand its implementation. In fact, I chose to not use physics and collision detection Love2d libraries because I felt I would learn a lot more trying to implement them myself. 
+One of my favorite achievements in this project is the effective implementation of the finite state game manager. Organizing and structuring the code became quite manageable with numerous states. The game manager proved invaluable in avoiding a convoluted web of conditions checking variables for every event, resulting in a more readable codebase.
 
-Now that I feel more comfortable with the subject, I would seek libraries for the next game project.
+Another significant success lies in the optimization of the collision system. Although it demanded time and effort to understand and derive the formulas for line segment intersection, the resulting confidence in the implementation was well worth it. The decision to forego the use of Love2D physics and collision detection libraries in favor of a manual implementation was intentional. I feel this approach yielded a deeper understanding of the subject. With a firmer understanding of collision and physics implementation in videogames I feel more confident in leveraging existing libraries to expedite development for a future project.
 
-## Improving Code
 
-For starters, going forward I would seek to break up `main.lua` into sub files that contain much smaller chunks of code. Each big category like importing sounds or the different game states could easily be their own file, which would make the code much more manageable. 
+## Code Improvements
 
-I also feel there needs to be more abstraction in my code - many sections could be broken up into functions that abstract away systems, making the code much more readable.
+In retrospect, I recognize the need for significant code refactoring to enhance maintainability and readability. Going forward, the following improvements would be prioritized:
+
+### Code Modularization
+
+The sprawling `main.lua` file, with over 1.3k lines of code, presents an opportunity for better organization. The plan is to divide the code into smaller, focused files. Each major category, such as sound management, game states, and graphics rendering, will have its dedicated file. This modular approach would aim to streamline code navigation and facilitate future updates.
+
+### Abstraction
+
+Introducing more abstraction will be a priority to improve code readability and maintainability. Many sections of the code could benefit from abstraction through the creation of functions that encapsulate specific systems to enhance clarity and reuse.
 
 Some examples would be:
 
-- `sound.lua` - Contains all sound loading and volume control logic
-- `states.lua` - Handles transitioning between game states
-- `graphics.lua` - Draws sprites, textures, etc.  
+- `load_sound()` - Contains all sound loading and volume control logic
+- `state_transition(state_a, state_b)` - Handles transitioning between game states
+- `load_graphics()` - Draws sprites, textures, etc.  
 
-## Improving Game
+## Game Improvements
 
-I feel the game is fairly bug free at this stage. It is also fun to play and fairly immersive for a simplistic lander game. There are some minor improvements I am considering, such as turning the velocity reading green when it is within acceptable landing range.
+As of now, the game stands as a relatively bug-free and enjoyable experience. It successfully captures the essence of a simplistic lunar lander game, providing an immersive and entertaining gameplay experience.
 
-As for long term goals, the game is not very replayable. I believe that a procedural level generation system would really improve the replay value. I would enjoy working on implementing this if I have the time in the future.
+### Minor Enhancements
+
+Consideration is being given to several minor improvements that could enhance the player experience. For example, visual cues such as turning the velocity reading green when within an acceptable landing range.
+
+### Long-Term Goals
+
+A key improvement would be the implementation of a procedural level generation system. This system would inject variability into each playthrough, adding a layer of unpredictability and significantly improving the replay value. I am enthusiastic about the possibility of working on its implementation given sufficient free time in the future.
+
 
 ## Miscellaneous
 
-Following are some of the Apollo 11 numbers used to implement physics in the game. These were extracted from [Lander Physics Data](https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C):
+In implementing the physics for the game, I utilized key Apollo 11 data extracted from [Lander Physics Data](https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C):
 
-- lander mass = 15103 kg  
-- lunar gravity in N = 1.6 kg * m/s^2
-- lander acceleration due to gravity 1.6 m/s^2 
-- lunar gravitational force on lander = 24164.8 N
-- lander descent thruster force = 45000 N
-- total lander acceleration when thrusters fire = -1.38 m/s^2
-- lander maneuvering thruster force = 450 N and 4 modules and 4 nozzles = 7200 N (not exactly accurate but lateral speed was too slow otherwise)
-- lander maneuvering thruster acceleration = 0.12 m/s^2
-- Scale: 1 pixel in game is defined as 1 meter
+- **Lander Mass**: 15,103 kg  
+- **Lunar Gravity**: 1.6 m/s²
+- **Lander Acceleration due to Gravity**: 1.6 m/s² 
+- **Lunar Gravitational Force on Lander**: 24,164.8 N
+- **Lander Descent Thruster Force**: 45,000 N
+- **Total Lander Acceleration when Thrusters Fire**: -1.38 m/s²
+- **Lander Maneuvering Thruster Force**: 450 N (4 modules, 4 nozzles = 7,200 N - not precisely accurate, but adjusted for gameplay)
+- **Lander Maneuvering Thruster Acceleration**: 0.12 m/s²
+- **Scale**: 1 pixel in the game is defined as 1 meter
+
 
 ## Credits
 
@@ -128,7 +142,7 @@ Following are some of the Apollo 11 numbers used to implement physics in the gam
 - Thrusters  
     - Video by [Played N Faved - Sound Effects & Stock Footage](https://www.youtube.com/watch?v=Ac-Vw7D8v3A) on YouTube 
 - Fuel Alarm
-    - Video by [Ze Rubenator on YouTube](https://www.youtube.com/watch?v=f9INvTu-gOI)
+    - Video by [Ze Rubenator](https://www.youtube.com/watch?v=f9INvTu-gOI) on YouTube
 
 **Fonts**
 - [DSKY Fonts](https://github.com/ehdorrii/dsky-fonts) by [ehdorrii](https://github.com/ehdorrii) on GitHub
@@ -143,7 +157,7 @@ Following are some of the Apollo 11 numbers used to implement physics in the gam
 - [CS50 Seminar](https://www.youtube.com/watch?v=iOA5YspoJDM)
 - [General Love2D usage](https://www.youtube.com/watch?v=kpxkQldiNPU&list=PLqPLyUreLV8DrLcLvQQ64Uz_h_JGLgGg2)  
 - [Line Intersection Video 1](https://www.youtube.com/watch?v=fHOLQJo0FjQ)
-- [Line Intersection VIdeo 2](https://www.youtube.com/watch?v=bvlIYX9cgls)  
+- [Line Intersection Video 2](https://www.youtube.com/watch?v=bvlIYX9cgls)  
 
 **NASA Websites**  
 - [Lander Physics Data](https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C)  
@@ -154,11 +168,9 @@ Shoutout to CS50 duck debugger [cs50.ai](cs50.ai) for tons of help and encourage
 Inspired by a scene from [First Man (2018)](https://www.youtube.com/watch?v=TrvXqosqkls)
 
 
-## Future Work 
+## Future Development
 
-Potential improvements for the future:
-
-- Procedural level generation system to increase replay value 
-- Turn velocity readings green when within safe landing threshold 
-- Break up `main.lua` into multiple files as described above
-- Abstract out more logic into reusable functions
+- Implement a procedural level generation system to elevate replay value.
+- Turning velocity readings green when within a safe landing threshold.
+- Break up `main.lua` into multiple files, as described above, to enhance code organization.
+- Abstract out more logic into reusable functions, promoting code readability and reusability.
