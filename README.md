@@ -2,7 +2,7 @@
 
 #### Video Demo: https://www.youtube.com/watch?v=hxL9pn6PkBs
 
-#### Description
+#### Description:
 
 ## Table of Contents
 - [Basic Description](#basic-description)
@@ -17,7 +17,7 @@
 
 ## Basic Description
 
-This is a classic minimalistic lunar lander game with an Apollo 11 theme written in lua using the LOVE2D engine. Note this version requires a Love2d installation to run.
+This is a classic minimalistic lunar lander game with an Apollo 11 theme written in lua using the LOVE2D engine. Note this version requires a [Love2D](https://love2d.org/) installation to run.
 
 ## Files 
 
@@ -128,12 +128,13 @@ Following are some of the Apollo 11 numbers used to implement physics in the gam
 - Thrusters  
     - Video by [Played N Faved - Sound Effects & Stock Footage](https://www.youtube.com/watch?v=Ac-Vw7D8v3A) on YouTube 
 - Fuel Alarm
-    - Video by [Ze Rubenator on YouTube](https://www.youtube.com/watch?v=f9INvTu-gOI)  
+    - Video by [Ze Rubenator on YouTube](https://www.youtube.com/watch?v=f9INvTu-gOI)
+
+**Fonts**
 - [DSKY Fonts](https://github.com/ehdorrii/dsky-fonts) by [ehdorrii](https://github.com/ehdorrii) on GitHub
 
 **Art & Assets**
 - Lander and thruster pixel art made using [Piskel](https://www.piskelapp.com/)
-- Inspired by a scene from [First Man (2018)](https://www.youtube.com/watch?v=TrvXqosqkls)
 - Splash Screen Background from [NASA Image Catalog](https://nssdc.gsfc.nasa.gov/imgcat/html/object_page/a11_h_44_6642.html)  
 - Credits Background from [NASA History Site](https://history.nasa.gov/alsj/a11/AS11-40-5874HR.jpg)
 - Background images retouched by [Leonardo.AI](https://app.leonardo.ai/)   
@@ -141,15 +142,17 @@ Following are some of the Apollo 11 numbers used to implement physics in the gam
 **Helpful Tutorials** 
 - [CS50 Seminar](https://www.youtube.com/watch?v=iOA5YspoJDM)
 - [General Love2D usage](https://www.youtube.com/watch?v=kpxkQldiNPU&list=PLqPLyUreLV8DrLcLvQQ64Uz_h_JGLgGg2)  
-- Line Intersection
-    - [Line Intersection Video 1](https://www.youtube.com/watch?v=fHOLQJo0FjQ)
-    - [Line Intersection VIdeo 2](https://www.youtube.com/watch?v=bvlIYX9cgls)  
+- [Line Intersection Video 1](https://www.youtube.com/watch?v=fHOLQJo0FjQ)
+- [Line Intersection VIdeo 2](https://www.youtube.com/watch?v=bvlIYX9cgls)  
 
 **NASA Websites**  
 - [Lander Physics Data](https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1969-059C)  
 - [Lunar Rock Characteristics](https://www.lroc.asu.edu/posts/157)
 
 Shoutout to CS50 duck debugger [cs50.ai](cs50.ai) for tons of help and encouragement throughout development!
+
+Inspired by a scene from [First Man (2018)](https://www.youtube.com/watch?v=TrvXqosqkls)
+
 
 ## Future Work 
 
