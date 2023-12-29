@@ -1,10 +1,11 @@
 function love.load()
 
 
-    -- set resolution
+    -- set resolution and title
     SCREEN_X = 1280
     SCREEN_Y = 800
     love.window.setMode(SCREEN_X, SCREEN_Y)
+    love.window.setTitle("APOLLO 11 LANDER")
 
 
     -- set lunar properties

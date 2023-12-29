@@ -19,7 +19,7 @@
 
 ## Introduction
 
-Welcome to the Apollo 11 Lunar Lander, a minimalistic game developed in Lua using the LOVE2D engine. This is my final project for CS50. To run the game, ensure you have [Love2D](https://love2d.org/) installed on your system.
+Welcome to the Apollo 11 Lander, a minimalistic lunar lander developed in Lua using the LOVE2D engine. This is my final project for CS50. To run the game, ensure you have [Love2D](https://love2d.org/) installed on your system.
 
 
 ## Project Structure
@@ -66,7 +66,7 @@ Finally, the love.keypressed function is redefined in each section to accommodat
 
 ### `love.draw()`
 
-This section simply involves calling the `draw` functions for graphical elements previously initialized in `love.load()` and rendering them to the appropriate states.
+This section simply involves calling the `draw()` method for graphical elements previously initialized in `love.load()` and rendering them in the appropriate states.
 
 
 ## Successes and Challenges
@@ -82,7 +82,7 @@ In retrospect, I recognize the need for significant code refactoring to enhance 
 
 ### Code Modularization
 
-The sprawling `main.lua` file, with over 1.3k lines of code, presents an opportunity for better organization. The plan is to divide the code into smaller, focused files. Each major category, such as sound management, game states, and graphics rendering, will have its dedicated file. This modular approach would aim to streamline code navigation and facilitate future updates.
+The sprawling `main.lua` file, with over 1.3k lines of code, presents an opportunity for better organization. The plan would to divide the code into smaller, focused files. Each major category, such as sound management, game states, and graphics rendering, will have its dedicated file. This modular approach would aim to streamline code navigation and facilitate future updates.
 
 ### Abstraction
 
@@ -96,7 +96,7 @@ Some examples would be:
 
 ## Game Improvements
 
-As of now, the game stands as a relatively bug-free and enjoyable experience. It successfully captures the essence of a simplistic lunar lander game, providing an immersive and entertaining gameplay experience.
+As of now, the game stands as a bug-free and enjoyable experience. It successfully captures the essence of a simplistic lunar lander, providing an immersive and entertaining gameplay experience.
 
 ### Minor Enhancements
 
