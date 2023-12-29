@@ -632,6 +632,7 @@ function love.update(dt)
 
         -- reset fuel alarm flags
         FUEL_LOW_ALERT_FLAG = false
+        FUEL_CRITICAL_ALERT_FLAG = false
         FUEL_FLASH_FLAG = true
 
         -- OLD COLLISION SYSTEM SAVED FOR POSTERITY
