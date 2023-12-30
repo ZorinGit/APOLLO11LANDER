@@ -21,6 +21,8 @@
 
 Welcome to the Apollo 11 Lander, a minimalistic lunar lander developed in Lua using the LOVE2D engine. This is my final project for CS50. To run the game, ensure you have [Love2D](https://love2d.org/) installed on your system.
 
+My primary objective was not to revolutionize the lunar lander genre but to excel in execution within the framework of a classic design and the Love2D engine. By narrowing the scope and crafting a minimalist lunar lander, the aim was to provide an experience that excelled in simplicity. Key objectives included clear visual presentation, fluid gameplay, interesting level design and an engaging atmosphere. Immersive elements, including background music, carefully chosen sound effects, crash animations, low fuel alerts and background NASA chatter were implemented to elevate the overall user experience.
+
 
 ## Project Structure
 
