@@ -116,7 +116,7 @@ In implementing the physics for the game, I utilized key Apollo 11 data extracte
 - **Total Lander Acceleration when Thrusters Fire**: -1.38 m/s²
 - **Lander Maneuvering Thruster Force**: 450 N (4 modules, 4 nozzles = 7,200 N - not precisely accurate, but adjusted for gameplay)
 - **Lander Maneuvering Thruster Acceleration**: 0.12 m/s²
-- **Scale**: 1 pixel in the game is defined as a 1 meter cube.
+- **Scale**: 1 pixel in the game is defined as a 1 meter square.
 
 
 ## Credits
