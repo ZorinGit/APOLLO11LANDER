@@ -195,6 +195,7 @@ function love.load()
     MED_TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 22)
     BIG_TXT_FONT = love.graphics.newFont("font/Gorton-Condensed.otf", 36)
     NUM_FONT = love.graphics.newFont("font/Zerlina.otf", 18)
+    BIG_NUM_FONT = love.graphics.newFont("font/Zerlina.otf", 45)
     X_MENU_TEXT_LOCATION = (SCREEN_X / 2) - 120
     Y_MENU_TEXT_LOCATION = (SCREEN_Y / 2) - 60
     MENU_TEXT_LINE_SPACER = 20
@@ -459,7 +460,7 @@ function love.load()
     }
 
     -- tables for fade in title
-    TITLE_TEXT_TABLE = {"A", " ", "P", " ", "O", " ", "L", " ", "L", " ", "O", " ", " ", " ", "1", " ", "1", " ", " ", " ", "L", " ", "A", " ", "N", " ", "D", " ", "E", " ", "R"}
+    TITLE_TEXT_TABLE = {"A", " ", "P", " ", "O", " ", "L", " ", "L", " ", "O", " ", " ", "1", " ", "1", " ", " ", " ", "L", " ", "A", " ", "N", " ", "D", " ", "E", " ", "R"}
     TITLE_TEXT_OPACITY = {}
 
     for i = 1, #TITLE_TEXT_TABLE do
@@ -468,7 +469,7 @@ function love.load()
     INDEX_FOR_OPACITY_TABLE = 1
 
     TITLE_X_LOCATIONS = {}
-    local title_x_start_location = 340
+    local title_x_start_location = 350
     for i = 1, #TITLE_TEXT_TABLE do
         TITLE_X_LOCATIONS[i] = title_x_start_location
         title_x_start_location = title_x_start_location + 20
@@ -484,6 +485,12 @@ function love.load()
             love.graphics.setFont(BIG_TXT_FONT)
             for i = 1, #TITLE_TEXT_TABLE do
                 love.graphics.setColor(1, 1, 1, TITLE_TEXT_OPACITY[i])
+                -- make 15 and 17 "11" use the number font
+                if i == 14 or i == 16 then
+                    love.graphics.setFont(BIG_NUM_FONT)
+                else
+                    love.graphics.setFont(BIG_TXT_FONT)
+                end
                 love.graphics.print(TITLE_TEXT_TABLE[i], TITLE_X_LOCATIONS[i], TITLE_Y_LOCATION)
             end
             love.graphics.setFont(TXT_FONT)
