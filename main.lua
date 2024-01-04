@@ -506,25 +506,28 @@ function love.load()
     FUEL_ALERT_TEXT = {
         draw = function ()
             if (FUEL_LOW_ALERT_FLAG == true or FUEL_CRITICAL_ALERT_FLAG == true) and FUEL_FLASH_FLAG == true then
-            -- red alert text
-            love.graphics.setColor(1, 0, 0)
-            love.graphics.setFont(TXT_FONT)
-            if FUEL_LOW_ALERT_FLAG == true then
-                love.graphics.print("FUEL LOW", X_MENU_TEXT_LOCATION + 60, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*0)
+                -- red alert text
+                love.graphics.setColor(1, 0, 0)
+                love.graphics.setFont(TXT_FONT)
+                if FUEL_LOW_ALERT_FLAG == true then
+                    love.graphics.print("FUEL LOW", X_MENU_TEXT_LOCATION + 60, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*0)
+                end
+                if FUEL_CRITICAL_ALERT_FLAG == true then
+                    love.graphics.print("FUEL CRITICAL", X_MENU_TEXT_LOCATION + 45, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*0)
+                end
+                -- red fuel gauge
+                local X_location_txt = SCREEN_X - 108
+                local X_location_num = SCREEN_X - 45
+                local Y_location = SCREEN_Y - 790
+                local line_space = 20
+                love.graphics.print("FUEL", X_location_txt, Y_location + (line_space * 2))
+                love.graphics.setFont(NUM_FONT)
+                love.graphics.print(string.format("%03d", math.floor(LANDER.fuel_s)), X_location_num, Y_location + (line_space * 2))
             end
-            if FUEL_CRITICAL_ALERT_FLAG == true then
-                love.graphics.print("FUEL CRITICAL", X_MENU_TEXT_LOCATION + 45, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*0)          
-            end
-            love.graphics.print("PRESS ENTER TO DISABLE", X_MENU_TEXT_LOCATION, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*1)
-
-            -- red fuel gauge
-            local X_location_txt = SCREEN_X - 108
-            local X_location_num = SCREEN_X - 45
-            local Y_location = SCREEN_Y - 790
-            local line_space = 20
-            love.graphics.print("FUEL", X_location_txt, Y_location + (line_space * 2))
-            love.graphics.setFont(NUM_FONT)
-            love.graphics.print(string.format("%03d", math.floor(LANDER.fuel_s)), X_location_num, Y_location + (line_space * 2))
+            if FUEL_LOW_ALERT_FLAG == true or FUEL_CRITICAL_ALERT_FLAG == true then
+                love.graphics.setFont(TXT_FONT)
+                love.graphics.setColor(1, 0, 0)
+                love.graphics.print("PRESS ENTER TO DISABLE", X_MENU_TEXT_LOCATION, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*1)
             end
         end
     }
