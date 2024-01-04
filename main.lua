@@ -125,7 +125,6 @@ function love.load()
     GAME_MANAGER = {"1-tutorial", "2-game_play", "3-paused", "4-landed", "5-crashed", "6-out_of_bounds", "7-score_screen", "8-loaded", "9-splash_screen"}
     CURRENT_GAME_STATE = GAME_MANAGER[9]
 
-
     -- levels - NAME - LANDER.x - LANDER.x_velocity - LANDER.y - LANDER.y_velocity - LANDER.fuel_s - SURFACE_LINE_POINTS - LANDING_SURFACE_LINE_POINTS
 
     LEVEL_1 = {
@@ -377,27 +376,34 @@ function love.load()
     -- tables for fade in credits
     CREDITS_TEXT_TABLE = {
         "CREDITS",
+        "",
         "DESIGN ZORIN",
         "PROGRAMMING ZORIN",
         "PIXEL ART ZORIN",
-        "PICTURES NASA",
+        " ",
+        "PICTURES FROM NASA",
         "RETOUCHED BY LEONARDO AI",
+        " ",
         "MUSIC KEVIN MACLEOD",
         "EQUATORIAL COMPLEX",
         "FROZEN STAR",
         "WIZARDTORIUM",
         "FANFARE FOR SPACE",
-        "CHATTER NASA MISSIONS",
-        "APOLLO 11 AND 13",
+        " ",
+        "CHATTER FROM NASA MISSIONS",
+        "APOLLO 11 AND APOLLO 13",
+        " ",
         "OTHER SOUNDS",
         "NEWLOCKNEW FREESOUND",
         "LINK-BOY FREESOUND",
         "ZE RUBENATOR YOUTUBE",
         "PLAYED N FAVED YOUTUBE",
+        " ",
         "DSKY FONTS",
         "EHDORRII GITHUB",
         " ",
-        " ",
+        "DEDICATED TO",
+        "THE APOLLO 11 ASTRONAUTS ",
         " ",
         "PRESS X TO EXIT GAME"
     }
@@ -415,8 +421,8 @@ function love.load()
         CREDITS_X_LOCATION[i] = x_center_point - (love.graphics.getFont():getWidth(CREDITS_TEXT_TABLE[i]) / 2)
     end
 
-    local y_center_point = 140
-    local y_line_spacer = 26
+    local y_center_point = 100
+    local y_line_spacer = 21
     CREDITS_Y_LOCATION = {}
     for i = 1, #CREDITS_TEXT_TABLE do
         CREDITS_Y_LOCATION[i] = y_center_point + (y_line_spacer * i)
