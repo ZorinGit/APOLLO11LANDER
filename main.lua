@@ -219,9 +219,9 @@ function love.load()
             love.graphics.print("METERS PER SECOND", X_location - 31, Y_location + 18)
             love.graphics.print("FUEL IN SECONDS", X_location - 10, Y_location + 42)
             love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 30, LANDING_SURFACE_LINE_POINTS[2] - 30)
-            love.graphics.print("VELOCITIES MUST BE UNDER 5 METERS PER SECOND FOR SAFE LANDING - LEFTOVER FUEL WILL BE ADDED TO YOUR SCORE - THERE ARE 5 LEVELS", LANDING_SURFACE_LINE_POINTS[1] - 230, LANDING_SURFACE_LINE_POINTS[2] + 20)
+            love.graphics.print("VELOCITIES MUST BE GREEN - UNDER 5 METERS PER SECOND FOR NOMINAL LANDING - LEFTOVER FUEL WILL BE ADDED TO YOUR SCORE - THERE ARE 5 LEVELS", LANDING_SURFACE_LINE_POINTS[1] - 280, LANDING_SURFACE_LINE_POINTS[2] + 20)
             love.graphics.print("PLEASE READ RED TUTORIAL TEXT THEN PRESS SPACE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
-            
+
             if TUTORIAL_MENU_TEXT_FLAG == true then
                 love.graphics.setColor(1, 1, 1)
                 love.graphics.print("PRESS P TO PAUSE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
@@ -261,11 +261,19 @@ function love.load()
                 love.graphics.print("-", X_location_sig, Y_location + (line_space * 1))
             end
             -- numbers
-            love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.y_velocity))), X_location_num, Y_location + (line_space * 0))
-            love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.x_velocity))), X_location_num, Y_location + (line_space * 1))
             love.graphics.print(string.format("%03d", math.floor(LANDER.fuel_s)), X_location_num, Y_location + (line_space * 2))
             love.graphics.print(string.format("%03d", SCORE ), X_location_num, Y_location + (line_space * 3))
             love.graphics.print(string.format("%03d", LEVEL_NUMBER), X_location_num, Y_location + (line_space * 4))
+            -- velocity numbers and text, changing color to green if under 5
+            if math.floor(LANDER.y_velocity) < 6 and math.floor(LANDER.y_velocity) > -1 then
+                love.graphics.setColor(0, 1, 0)
+            end
+            love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.y_velocity))), X_location_num, Y_location + (line_space * 0))
+            love.graphics.setColor(1, 1, 1)
+            if math.abs(math.floor(LANDER.x_velocity)) < 6 then
+                love.graphics.setColor(0, 1, 0)
+            end
+            love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.x_velocity))), X_location_num, Y_location + (line_space * 1))
         end
     }
 
@@ -280,6 +288,7 @@ function love.load()
 
     THRUSTER_GRAPHIC = {
         draw = function ()
+            love.graphics.setColor(1, 1, 1)
             if LANDER.y_thruster == true then
                 love.graphics.draw(LANDER.sprite_y_thruster, LANDER.x, LANDER.y)
             end
@@ -296,6 +305,7 @@ function love.load()
 
     LANDER_GRAPHIC = {
         draw = function ()
+            love.graphics.setColor(1, 1, 1)
             love.graphics.draw(LANDER.spriteA1, LANDER.x_old2, LANDER.y_old2)
             love.graphics.draw(LANDER.spriteA05, LANDER.x_old1, LANDER.y_old1)
             love.graphics.draw(LANDER.spriteA025, LANDER.x, LANDER.y)
