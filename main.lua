@@ -113,6 +113,7 @@ function love.load()
     -- DT TIMERS!
     DT_TIMER_FOR_SPLASH_SCREEN = 0
     DT_TIMER_FOR_TUTORIAL = 0
+    DT_TIMER_FOR_LOADED_HUD = 0
     DT_TIMER_FOR_SOUND_CONTROL = 0
     DT_TIMER_FOR_FUEL_ALERT = 0
     DT_TIMER_FOR_CRASH_ANIMATION = 0
@@ -233,6 +234,7 @@ function love.load()
         end
     }
 
+    HUD_TEXT_OPACITY = 0
     HUD_TEXT = {
         draw = function ()
             -- displayed variables on the right corner
@@ -241,7 +243,7 @@ function love.load()
             local X_location_num = SCREEN_X - 45
             local Y_location = SCREEN_Y - 790
             local line_space = 20
-            love.graphics.setColor(1, 1, 1)
+            love.graphics.setColor(1, 1, 1, HUD_TEXT_OPACITY)
             -- text
             love.graphics.setFont(TXT_FONT)
             love.graphics.print("VERT", X_location_txt, Y_location + (line_space * 0))
@@ -267,12 +269,12 @@ function love.load()
             love.graphics.print(string.format("%03d", LEVEL_NUMBER), X_location_num, Y_location + (line_space * 4))
             -- velocity numbers and text, changing color to green if under 5
             if math.floor(LANDER.y_velocity) < 6 and math.floor(LANDER.y_velocity) > -1 then
-                love.graphics.setColor(0, 1, 0)
+                love.graphics.setColor(0, 1, 0, HUD_TEXT_OPACITY)
             end
             love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.y_velocity))), X_location_num, Y_location + (line_space * 0))
-            love.graphics.setColor(1, 1, 1)
+            love.graphics.setColor(1, 1, 1, HUD_TEXT_OPACITY)
             if math.abs(math.floor(LANDER.x_velocity)) < 6 then
-                love.graphics.setColor(0, 1, 0)
+                love.graphics.setColor(0, 1, 0, HUD_TEXT_OPACITY)
             end
             love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.x_velocity))), X_location_num, Y_location + (line_space * 1))
         end
@@ -435,10 +437,10 @@ function love.load()
             end
         end
     }
-
+    LOADED_SCREEN_TEXT_OPACITY = 0
     LOADED_SCREEN_TEXT = {
         draw = function ()
-            love.graphics.setColor(1, 1, 1)
+            love.graphics.setColor(1, 1, 1, LOADED_SCREEN_TEXT_OPACITY)
             love.graphics.setFont(TXT_FONT)
             love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
         end
@@ -656,6 +658,11 @@ function love.update(dt)
         FUEL_CRITICAL_ALERT_FLAG = false
         FUEL_FLASH_FLAG = true
 
+        -- reset text opacities and timer for new loading
+        LOADED_SCREEN_TEXT_OPACITY = 0
+        HUD_TEXT_OPACITY = 0
+        DT_TIMER_FOR_LOADED_HUD = 0
+
         -- OLD COLLISION SYSTEM SAVED FOR POSTERITY
         -- -- load line collision pixels for this level
         -- LINE_COLLISION_PIXELS = {}
@@ -724,13 +731,19 @@ function love.update(dt)
             end
         end
 
-        -- fade in tutorial text after 1 second
-        if DT_TIMER_FOR_TUTORIAL > 1 then
-            TUTORIAL_RED_TEXT_OPACITY = TUTORIAL_RED_TEXT_OPACITY + (dt / 2)
+        -- fade in tutorial text after 0.5 second
+        if DT_TIMER_FOR_TUTORIAL > 0.5 then
+            TUTORIAL_RED_TEXT_OPACITY = TUTORIAL_RED_TEXT_OPACITY + (dt / 2.5)
+        end
+
+        -- fade in the hud after 1 second
+        if DT_TIMER_FOR_TUTORIAL > 1 and HUD_TEXT_OPACITY < 1 then
+            HUD_TEXT_OPACITY = HUD_TEXT_OPACITY + (dt / 2.5)
         end
 
         -- change the flag to display menu text
         if SPACE_COUNTER_FOR_TUTORIAL == 1 then
+            TUTORIAL_RED_TEXT_OPACITY = 1
             TUTORIAL_MENU_TEXT_FLAG = true
         end
 
@@ -738,6 +751,8 @@ function love.update(dt)
         if SPACE_COUNTER_FOR_TUTORIAL == 2 then
             CURRENT_GAME_STATE = GAME_MANAGER[2]
             SPLASH_SCREEN_MUSIC:stop()
+            -- ensure hud is completely visible
+            HUD_TEXT_OPACITY = 1
         end
 
     end
@@ -1118,7 +1133,7 @@ function love.update(dt)
                 CRASH_PROBLEM_SOUND:stop()
 
                 LEVEL_LOADED_FLAG = false
-
+                -- exit 5-crashed into 8-loaded by pressing "c" to continue to next level
                 CURRENT_GAME_STATE = GAME_MANAGER[8]
             end
         end
@@ -1190,10 +1205,22 @@ function love.update(dt)
             TRANSITION_CURTAIN.flag = false
         end
 
+        -- increase timer for hud fade in
+        if DT_TIMER_FOR_LOADED_HUD < 5 then
+            DT_TIMER_FOR_LOADED_HUD = DT_TIMER_FOR_LOADED_HUD + dt
+        end
+        -- fade in hud text after 1 second
+        if DT_TIMER_FOR_LOADED_HUD > 0.8 and HUD_TEXT_OPACITY < 1 then
+            LOADED_SCREEN_TEXT_OPACITY = LOADED_SCREEN_TEXT_OPACITY + (dt / 1.5)
+            HUD_TEXT_OPACITY = HUD_TEXT_OPACITY + (dt / 1.5)
+        end
+
         -- exit 8-loaded into 2-game_play by pressing "space"
         function love.keypressed(key)
             if key == 'space' then
-             CURRENT_GAME_STATE = GAME_MANAGER[2]
+                CURRENT_GAME_STATE = GAME_MANAGER[2]
+                -- ensure hud is completely visible
+                HUD_TEXT_OPACITY = 1
             end
         end
     end
