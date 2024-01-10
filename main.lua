@@ -466,7 +466,7 @@ function love.load()
     }
 
     -- tables for fade in title
-    TITLE_TEXT_TABLE = {"A", " ", "P", " ", "O", " ", "L", " ", "L", " ", "O", " ", " ", "1", " ", "1", " ", " ", " ", "L", " ", "A", " ", "N", " ", "D", " ", "E", " ", "R"}
+    TITLE_TEXT_TABLE = {"A", " ", "P", " ", "O", " ", "L", " ", "L", " ", "O", " ", " ", " ", "1", " ", "1", " ", " ", " ", "L", " ", "A", " ", "N", " ", "D", " ", "E", " ", "R"}
     TITLE_TEXT_OPACITY = {}
 
     for i = 1, #TITLE_TEXT_TABLE do
@@ -491,12 +491,6 @@ function love.load()
             love.graphics.setFont(BIG_TXT_FONT)
             for i = 1, #TITLE_TEXT_TABLE do
                 love.graphics.setColor(1, 1, 1, TITLE_TEXT_OPACITY[i])
-                -- make 15 and 17 "11" use the number font
-                if i == 14 or i == 16 then
-                    love.graphics.setFont(BIG_NUM_FONT)
-                else
-                    love.graphics.setFont(BIG_TXT_FONT)
-                end
                 love.graphics.print(TITLE_TEXT_TABLE[i], TITLE_X_LOCATIONS[i], TITLE_Y_LOCATION)
             end
             love.graphics.setFont(TXT_FONT)
