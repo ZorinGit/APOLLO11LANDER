@@ -364,9 +364,10 @@ function love.load()
         end
     }
 
+    SCORE_SCREEN_BACKGROUND_OPACITY = 0
     SCORE_SCREEN_BACKGROUND = {
         draw = function ()
-            love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.setColor(1, 1, 1, SCORE_SCREEN_BACKGROUND_OPACITY)
             love.graphics.draw(SCORE_SCREEN.pic, SCORE_SCREEN.x, SCORE_SCREEN.y)
         end
     }
@@ -374,7 +375,7 @@ function love.load()
     -- tables for fade in credits
     CREDITS_TEXT_TABLE = {
         "CREDITS",
-        "",
+        " ",
         "DESIGN ZORIN",
         "PROGRAMMING ZORIN",
         "PIXEL ART ZORIN",
@@ -400,11 +401,16 @@ function love.load()
         "DSKY FONTS",
         "EHDORRII GITHUB",
         " ",
+        "THANKS TO FAMILY AND FRIENDS",
+        "FOR BETA TESTING",
+        " ",
         "DEDICATED TO",
         "THE APOLLO 11 ASTRONAUTS ",
         " ",
+        "PRESS R TO RESTART GAME",
         "PRESS X TO EXIT GAME"
     }
+    CREDITS_TEXT_TABLE_INDEX = 1
 
     CREDITS_TEXT_OPACITY = {}
 
@@ -419,16 +425,17 @@ function love.load()
         CREDITS_X_LOCATION[i] = x_center_point - (love.graphics.getFont():getWidth(CREDITS_TEXT_TABLE[i]) / 2)
     end
 
-    local y_center_point = 100
-    local y_line_spacer = 21
+    local y_center_point = 80
+    local y_line_spacer = 20
     CREDITS_Y_LOCATION = {}
     for i = 1, #CREDITS_TEXT_TABLE do
         CREDITS_Y_LOCATION[i] = y_center_point + (y_line_spacer * i)
     end
 
+    SCORE_SCREEN_TEXT_OPACITY = 0
     SCORE_SCREEN_TEXT = {
         draw = function (SCORE)
-            love.graphics.setColor(1, 1, 1)
+            love.graphics.setColor(1, 1, 1, SCORE_SCREEN_TEXT_OPACITY)
             love.graphics.setFont(MED_TXT_FONT)
             local line_1 = "CONGRATULATIONS YOUR FINAL SCORE IS " .. math.floor(SCORE)
             love.graphics.print(line_1, x_center_point - (love.graphics.getFont():getWidth(line_1) / 2), y_center_point - (y_line_spacer * 3))
@@ -441,6 +448,7 @@ function love.load()
             end
         end
     }
+
     LOADED_SCREEN_TEXT_OPACITY = 0
     LOADED_SCREEN_TEXT = {
         draw = function ()
@@ -1178,17 +1186,39 @@ function love.update(dt)
         SCORE_SCREEN_MUSIC:setVolume(SCORE_SCREEN_MUSIC_BASE_VOL * MASTER_VOLUME_MODIFIER)
         VICTORY_SMALL_STEP_SOUND:setVolume(VICTORY_SMALL_STEP_SOUND_BASE_VOL * MASTER_VOLUME_MODIFIER)
 
-        -- control the alpha to fade in credits after 3 seconds
-        if CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] < 1  and DT_TIMER_FOR_SCORE_SCREEN > 9 then
-            CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] = CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] + (dt / 1.9)
-        elseif CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] >= 1 and DT_TIMER_FOR_SCORE_SCREEN > 8 and INDEX_FOR_CREDITS_TEXT_OPACITY < #CREDITS_TEXT_TABLE then
+        -- controls score screen background fading in after 0.5 seconds
+        if SCORE_SCREEN_BACKGROUND_OPACITY < 1 and DT_TIMER_FOR_SCORE_SCREEN > 1 then
+            SCORE_SCREEN_BACKGROUND_OPACITY = SCORE_SCREEN_BACKGROUND_OPACITY + (dt / 6)
+        end
+
+        -- controls score screen text fading in after 1 seconds
+        if SCORE_SCREEN_TEXT_OPACITY < 1 and DT_TIMER_FOR_SCORE_SCREEN > 5.7 then
+            SCORE_SCREEN_TEXT_OPACITY = SCORE_SCREEN_TEXT_OPACITY + (dt / 3)
+        end
+
+        -- control the alpha to fade in credits after 8.8 seconds 
+        if CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] < 1  and DT_TIMER_FOR_SCORE_SCREEN > 8.8 then
+            --skipping over empty lines
+            if CREDITS_TEXT_TABLE[CREDITS_TEXT_TABLE_INDEX] == " " then
+                CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] = 1
+            else
+                CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] = CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] + (dt / 1.81)
+            end
+        elseif CREDITS_TEXT_OPACITY[INDEX_FOR_CREDITS_TEXT_OPACITY] >= 1 and INDEX_FOR_CREDITS_TEXT_OPACITY < #CREDITS_TEXT_TABLE then
             INDEX_FOR_CREDITS_TEXT_OPACITY = INDEX_FOR_CREDITS_TEXT_OPACITY + 1
+            CREDITS_TEXT_TABLE_INDEX = CREDITS_TEXT_TABLE_INDEX + 1
         end
 
         function love.keypressed(key)
             -- exit 7-out_of_bounds quitting the game window with "x"
             if key == 'x' then
                 love.event.quit()
+            end
+
+            if key == 'r' then
+                SCORE_SCREEN_MUSIC:stop()
+                VICTORY_SMALL_STEP_SOUND:stop()
+                love.load()
             end
         end
     end
