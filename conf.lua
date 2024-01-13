@@ -4,6 +4,9 @@ function love.conf(t)
     t.window.width = 1280
     t.window.height = 800
 
+    -- for testing
+    -- t.console = true
+
     -- disable stuff that is not needed for the game
     t.accelerometerjoystick = false
     t.audio.mixwithsystem = false

@@ -131,7 +131,7 @@ function love.load()
         lander_x_velocity = 0,
         lander_y = 50,
         lander_y_velocity = 0,
-        lander_fuel_s = 99,
+        lander_fuel_s = 33,
         surface_line_points = {0, 750, 1280, 750},
         landing_surface_line_points = {300, 748, 350, 748}
     }
@@ -166,7 +166,7 @@ function love.load()
         lander_y_velocity = 15,
         lander_fuel_s = 110,
         surface_line_points = {0, 750, 500, 750, 550, 450, 1000, 450, 1090, 750, 1140, 750, 1280, 450},
-        landing_surface_line_points = {1095, 748, 1137, 748}
+        landing_surface_line_points = {1092, 748, 1138, 748}
     }
 
     LEVEL_5 = {
@@ -177,7 +177,7 @@ function love.load()
         lander_y_velocity = 10,
         lander_fuel_s = 85,
         surface_line_points = {0, 750, 100, 750, 150, 450, 200, 450, 250, 100, 400, 100, 450, 750, 1280, 750},
-        landing_surface_line_points = {160, 448, 190, 448}
+        landing_surface_line_points = {153, 448, 197, 448}
     }
 
     -- set up level stuff
@@ -203,6 +203,7 @@ function love.load()
     SPACE_COUNTER_FOR_TUTORIAL = 0
     TUTORIAL_MENU_TEXT_FLAG = false
     TUTORIAL_RED_TEXT_OPACITY = 0
+    TUTORIAL_MENU_TEXT_OPACITY = 0
 
     TUTORIAL_TEXT = {
         draw = function ()
@@ -218,15 +219,15 @@ function love.load()
             love.graphics.print("METERS PER SECOND", X_location - 31, Y_location + 18)
             love.graphics.print("FUEL IN SECONDS", X_location - 10, Y_location + 42)
             love.graphics.print("LANDING ZONE", LANDING_SURFACE_LINE_POINTS[1] - 30, LANDING_SURFACE_LINE_POINTS[2] - 30)
-            love.graphics.print("VELOCITIES MUST BE GREEN - UNDER 5 METERS PER SECOND FOR NOMINAL LANDING - LEFTOVER FUEL WILL BE ADDED TO YOUR SCORE - THERE ARE 5 LEVELS", LANDING_SURFACE_LINE_POINTS[1] - 280, LANDING_SURFACE_LINE_POINTS[2] + 20)
-            love.graphics.print("PLEASE READ RED TUTORIAL TEXT THEN PRESS SPACE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("VELOCITIES MUST BE UNDER 5 METERS PER SECOND FOR NOMINAL LANDING - LEFTOVER FUEL WILL BE ADDED TO YOUR SCORE - 5 LEVELS TOTAL", LANDING_SURFACE_LINE_POINTS[1] - 240, LANDING_SURFACE_LINE_POINTS[2] + 20)
+            love.graphics.print("PLEASE READ TUTORIAL TEXT THEN PRESS SPACE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
 
             if TUTORIAL_MENU_TEXT_FLAG == true then
-                love.graphics.setColor(1, 1, 1)
-                love.graphics.print("PRESS P TO PAUSE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+                love.graphics.setColor(1, 1, 1, TUTORIAL_MENU_TEXT_OPACITY)
+                love.graphics.print("PRESS P TO PAUSE DURING GAME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
                 love.graphics.print("PRESS R TO RESTART ANY TIME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*2)
-                love.graphics.print("UP AND DOWN ARROWS CONTROL SOUND VOLUME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*3)
-                love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*4) 
+                love.graphics.print("UP AND DOWN ARROWS - AUDIO VOLUME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*3)
+                love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*4)
             end
         end
     }
@@ -264,14 +265,14 @@ function love.load()
             love.graphics.print(string.format("%03d", math.floor(LANDER.fuel_s)), X_location_num, Y_location + (line_space * 2))
             love.graphics.print(string.format("%03d", SCORE ), X_location_num, Y_location + (line_space * 3))
             love.graphics.print(string.format("%03d", LEVEL_NUMBER), X_location_num, Y_location + (line_space * 4))
-            -- velocity numbers and text, changing color to green if under 5
-            if math.floor(LANDER.y_velocity) < 6 and math.floor(LANDER.y_velocity) > -1 then
-                love.graphics.setColor(0, 1, 0, HUD_TEXT_OPACITY)
+            -- velocity numbers and text, changing color to red if over 5 meters per second
+            if math.floor(LANDER.y_velocity) >= 6 then
+                love.graphics.setColor(1, 0, 0, HUD_TEXT_OPACITY)
             end
             love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.y_velocity))), X_location_num, Y_location + (line_space * 0))
             love.graphics.setColor(1, 1, 1, HUD_TEXT_OPACITY)
-            if math.abs(math.floor(LANDER.x_velocity)) < 6 then
-                love.graphics.setColor(0, 1, 0, HUD_TEXT_OPACITY)
+            if math.abs(math.floor(LANDER.x_velocity)) >= 6 then
+                love.graphics.setColor(1, 0, 0, HUD_TEXT_OPACITY)
             end
             love.graphics.print(string.format("%03d", math.abs(math.floor(LANDER.x_velocity))), X_location_num, Y_location + (line_space * 1))
         end
@@ -332,8 +333,10 @@ function love.load()
         draw = function ()
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("PRESS P TO UNPAUSE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
-            love.graphics.print("PRESS R TO RESTART LEVEL", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+            love.graphics.print("PAUSED", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("UP AND DOWN ARROWS - AUDIO VOLUME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+            love.graphics.print("PRESS R TO RESTART LEVEL", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*2)
+            love.graphics.print("PRESS P TO UNPAUSE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*3)
         end
     }
 
@@ -351,7 +354,7 @@ function love.load()
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
             love.graphics.print("LANDER HAS CRASHED", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
-            love.graphics.print("PRESS R TO RESTART", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+            love.graphics.print("PRESS R TO RESTART LEVEL", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
         end
     }
 
@@ -359,8 +362,10 @@ function love.load()
         draw = function ()
             love.graphics.setColor(1, 1, 1)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("OUT OF BOUNDS! LANDER IS LOST FOREVER IN SPACE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
-            love.graphics.print("PRESS R TO RESTART", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+            love.graphics.print("OUT OF BOUNDS", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("LANDER IS LOST FOREVER IN SPACE", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+            love.graphics.print("PRESS R TO RESTART LEVEL", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*2)
+
         end
     }
 
@@ -454,7 +459,10 @@ function love.load()
         draw = function ()
             love.graphics.setColor(1, 1, 1, LOADED_SCREEN_TEXT_OPACITY)
             love.graphics.setFont(TXT_FONT)
-            love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("PRESS P TO PAUSE DURING GAME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*0)
+            love.graphics.print("PRESS R TO RESTART ANY TIME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*1)
+            love.graphics.print("UP AND DOWN ARROWS - AUDIO VOLUME", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*2)
+            love.graphics.print("PRESS SPACE TO START", X_MENU_TEXT_LOCATION, Y_MENU_TEXT_LOCATION + MENU_TEXT_LINE_SPACER*3)
         end
     }
 
@@ -482,8 +490,12 @@ function love.load()
     end
     INDEX_FOR_OPACITY_TABLE = 1
 
+    -- make it so the title is centered
     TITLE_X_LOCATIONS = {}
-    local title_x_start_location = 350
+    local total_width_of_title_text_table = 630
+    local title_x_start_location = (SCREEN_X / 2 ) - (total_width_of_title_text_table / 2)
+
+    -- make it so each letter of gets it's on position in the title
     for i = 1, #TITLE_TEXT_TABLE do
         TITLE_X_LOCATIONS[i] = title_x_start_location
         title_x_start_location = title_x_start_location + 20
@@ -535,7 +547,7 @@ function love.load()
             if FUEL_LOW_ALERT_FLAG == true or FUEL_CRITICAL_ALERT_FLAG == true then
                 love.graphics.setFont(TXT_FONT)
                 love.graphics.setColor(1, 0, 0)
-                love.graphics.print("PRESS ENTER TO DISABLE", X_MENU_TEXT_LOCATION, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*1)
+                love.graphics.print("PRESS ENTER TO DISABLE ALARM", X_MENU_TEXT_LOCATION - 35, SCREEN_Y - 780 + MENU_TEXT_LINE_SPACER*1)
             end
         end
     }
@@ -751,6 +763,9 @@ function love.update(dt)
         if SPACE_COUNTER_FOR_TUTORIAL == 1 then
             TUTORIAL_RED_TEXT_OPACITY = 1
             TUTORIAL_MENU_TEXT_FLAG = true
+            if TUTORIAL_MENU_TEXT_OPACITY < 1 then
+                TUTORIAL_MENU_TEXT_OPACITY = TUTORIAL_MENU_TEXT_OPACITY + (dt / 1.5)
+            end
         end
 
         -- exit 1-tutorial into 2-game_play by pressing "space" and stop music
@@ -1058,10 +1073,16 @@ function love.update(dt)
         CHATTER_SOUND:setVolume((CHATTER_SOUND_BASE_VOL - 0.028) * MASTER_VOLUME_MODIFIER)
         MUSIC_SOUND:setVolume((MUSIC_SOUND_BASE_VOL - 0.25) * MASTER_VOLUME_MODIFIER)
 
-        -- exit 3_paused into 2-game_play by pressing "p"
+        -- exit 3_paused into 2-game_play by pressing "p" and play alert sounds if any were active
         function love.keypressed(key)
             if key == 'p' then
                 CURRENT_GAME_STATE = GAME_MANAGER[2]
+                if FUEL_LOW_ALERT_FLAG == true then
+                    FUEL_LOW_ALERT_SOUND:play()
+                end
+                if FUEL_CRITICAL_ALERT_FLAG == true then
+                    FUEL_CRITICAL_ALERT_SOUND:play()
+                end
             end
             -- restart current level during paused
             -- exit 3_paused into load then 8-loaded by pressing "r" to restart level
