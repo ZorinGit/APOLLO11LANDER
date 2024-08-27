@@ -1,6 +1,6 @@
 # APOLLO 11 LANDER
 
-#### Video Demo: https://www.youtube.com/watch?v=hxL9pn6PkBs
+#### Demo Video: https://www.youtube.com/watch?v=hxL9pn6PkBs
 
 
 ## Table of Contents
