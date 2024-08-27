@@ -2,8 +2,6 @@
 
 #### Video Demo: https://www.youtube.com/watch?v=hxL9pn6PkBs
 
-#### Description:
-
 
 ## Table of Contents
 - [Introduction](#introduction)
